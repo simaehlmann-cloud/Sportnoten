@@ -31,9 +31,6 @@ jobs:
       - name: Pakete installieren
         run: npm install
 
-      - name: Fehlende Icons aus der Vorlage erzeugen
-        run: node scripts/icons.mjs --if-missing
-
       - name: Web-App bauen (www/)
         run: npm run build
 
