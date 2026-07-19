@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Sportnoten">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E7C5A"/>
+      <stop offset="1" stop-color="#12312A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="230" fill="url(#g)"/>
+  <g transform="translate(102.4,102.4) scale(0.8)">
+    <g fill="#fff">
+      <rect x="437.3" y="59.7" width="149.3" height="140.8" rx="42.7"/>
+      <rect x="465.1" y="170.7" width="93.9" height="102.4"/>
+      <circle cx="270.5" cy="338.8" r="61.9"/>
+      <circle cx="753.5" cy="338.8" r="61.9"/>
+      <path d="M621.2 366.1 L621.2 797.9 L522.7 797.9 L522.7 474.0 L433.5 521.0 L395.9 441.2 L536.7 366.1 Z"/>
+    </g>
+    <circle cx="512.0" cy="580.3" r="341.3" fill="none" stroke="#fff" stroke-width="115.2"/>
+  </g>
+</svg>
