@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Sportnoten – Notenverwaltung</title>
+<link rel="icon" href="assets/favicon-192.png" />
+<link rel="apple-touch-icon" href="assets/icon-512.png" />
+<meta name="theme-color" content="#0E7C5A" />
+<meta name="description" content="Notenverwaltung für den Sportunterricht: Klassen, Sportarten, Teilnoten, Leistungstabellen, Anwesenheit und Zeugnisnoten." />
+<style>
+:root{
+  --bg:#EFF3F1; --card:#fff; --ink:#152A22; --sub:#556B62; --faint:#85988F;
+  --line:#E8EEEB; --border:#D2DCD7; --accent:#0E7C5A; --accent-soft:#E4F3EC;
+  --yellow:#FFD84D; --red:#B0392E; --red-soft:#FBE9E7; --green:#1E7B3C; --green-soft:#E4F5E9;
+  --warn:#A97400; --warn-soft:#FFF6E0; --hero1:#12312A; --hero2:#1C4C3D; --hero-ink:#A8C6BA; --chip:#F0F4F2;
+  --note-bg:#FFFDF4; --shadow:0 1px 4px rgba(21,42,34,.09);
+  --disp:'Space Grotesk',ui-rounded,'Avenir Next','Segoe UI',system-ui,sans-serif;
+  --body:'Karla',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+[data-theme="dark"]{
+  --bg:#0F1714; --card:#18231F; --ink:#E7EFEA; --sub:#A2B5AC; --faint:#788C83;
+  --line:#25332D; --border:#38493F; --accent:#57C79B; --accent-soft:#1D3830;
+  --yellow:#FFD84D; --red:#F09489; --red-soft:#3F2926; --green:#6FD694; --green-soft:#20372A;
+  --warn:#FFD84D; --warn-soft:#3A3020; --hero1:#0B1512; --hero2:#173028; --hero-ink:#93AFA4; --chip:#22302A;
+  --note-bg:#222E29; --shadow:0 1px 4px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);min-height:100vh}
+input,textarea,select,button{font-family:var(--body);color:var(--ink)}
+input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.wrap{max-width:920px;margin:0 auto;padding:0 14px 90px}
+[data-wide="1"] .wrap{max-width:1500px}
+.card{background:var(--card);border-radius:16px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px}
+h2.sec{font-family:var(--disp);font-size:14px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin:0 0 10px;display:flex;align-items:center;gap:6px}
+.brand{font-family:var(--disp);font-weight:700}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:11px;padding:9px 16px;font-size:15px;font-weight:700;font-family:var(--disp);cursor:pointer}
+[data-theme="dark"] .btn{color:#0B1512}
+.btn-ghost{background:var(--card);color:var(--accent);border:1.5px solid var(--accent);border-radius:11px;padding:7px 13px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--disp)}
+.btn-quiet{background:var(--card);color:var(--sub);border:1.5px solid var(--border);border-radius:11px;padding:7px 13px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--disp)}
+.btn-danger{background:var(--card);color:var(--red);border:1.5px solid var(--red);border-radius:11px;padding:7px 13px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--disp)}
+.inp{width:100%;padding:10px 11px;border-radius:11px;border:1.5px solid var(--border);font-size:16px;background:var(--card)}
+.ta{width:100%;min-height:80px;padding:10px 11px;border-radius:11px;border:1.5px solid var(--border);font-size:15px;background:var(--note-bg);resize:vertical;line-height:1.5}
+.cell{width:100%;min-height:44px;padding:10px 5px;text-align:center;border-radius:9px;border:1.5px solid var(--border);font-size:16px;font-weight:700;font-family:var(--disp);background:var(--card)}
+.cell.bad{border-color:var(--red);background:var(--red-soft);color:var(--red)}
+.cell:focus{border-color:var(--accent)}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hint{font-size:13px;color:var(--sub);line-height:1.5}
+.lbl{font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em}
+.xbtn{background:none;border:none;color:var(--red);font-size:17px;cursor:pointer;padding:2px 6px;line-height:1}
+.pill{border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700;background:var(--chip);color:var(--sub);white-space:nowrap}
+.warnbox{background:var(--warn-soft);border-radius:11px;padding:10px 12px;font-size:13px;line-height:1.5;color:var(--ink)}
+.ico{vertical-align:-3px;flex-shrink:0}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.grid{border-collapse:separate;border-spacing:0;font-size:14px;min-width:100%}
+table.grid th,table.grid td{padding:6px 7px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.grid th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--faint);text-align:center;font-weight:700}
+table.grid th.l,table.grid td.l{text-align:left}
+table.grid tbody tr:nth-child(even){background:var(--chip)}
+table.grid td.stick,table.grid th.stick{position:sticky;left:0;background:var(--card);z-index:1;box-shadow:1px 0 0 var(--line)}
+table.grid tbody tr:nth-child(even) td.stick{background:var(--chip)}
+table.grid tbody tr:focus-within{box-shadow:inset 3px 0 0 var(--accent)}
+table.grid tbody tr:focus-within td{background:var(--accent-soft)}
+[data-hall="1"] table.grid td,[data-hall="1"] table.grid th{padding:11px 9px;font-size:16px}
+[data-hall="1"] .cell{padding:14px 5px;font-size:20px;min-height:54px}
+[data-hall="1"] .att{width:46px;padding:11px 0;font-size:15px}
+[data-hall="1"] .tab{padding:10px 16px;font-size:15px}
+[data-hall="1"] .btn,[data-hall="1"] .btn-ghost,[data-hall="1"] .btn-quiet{padding:12px 18px;font-size:16px}
+.bar{height:7px;background:var(--chip);border-radius:4px;overflow:hidden}
+.bar>div{height:7px;background:var(--accent);border-radius:4px}
+.nchip{display:inline-flex;align-items:center;gap:5px;border:1.5px solid;border-radius:9px;padding:2px 7px;font-family:var(--disp);font-weight:700;font-size:14px;background:var(--card)}
+.segs{display:inline-flex;gap:1.5px;align-items:flex-end;height:11px}
+.segs i{width:3px;border-radius:1px;display:block}
+.att{border:none;border-radius:9px;min-height:40px;padding:8px 0;width:40px;font-weight:700;font-size:14px;cursor:pointer;font-family:var(--disp)}
+.switch{position:relative;width:44px;height:25px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:var(--border);border-radius:20px;cursor:pointer;transition:.2s}
+.slider:before{content:"";position:absolute;height:19px;width:19px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.switch input:checked + .slider{background:var(--accent)}
+.switch input:checked + .slider:before{transform:translateX(19px)}
+.tabbar{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px}
+.tab{border:1.5px solid var(--border);background:var(--card);color:var(--sub);border-radius:20px;padding:6px 13px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--disp)}
+.tab.on{border-color:var(--accent);background:var(--accent);color:#fff}
+[data-theme="dark"] .tab.on{color:#0B1512}
+.snack{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:120;background:var(--hero1);color:#fff;border-radius:13px;padding:10px 16px;display:flex;gap:14px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.35);font-size:14px;font-weight:600;max-width:92vw}
+.snack button{background:none;border:none;color:var(--yellow);font-weight:700;cursor:pointer;font-size:14px}
+.watchbar{position:sticky;top:0;z-index:20;background:var(--hero1);color:#fff;border-radius:14px;padding:10px 12px;margin-bottom:12px;box-shadow:var(--shadow)}
+.lock{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.todoflag{border:none;background:none;cursor:pointer;font-size:17px;padding:9px 8px;line-height:1;min-height:44px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.print-sheet{display:none}
+@media print{
+  body{background:#fff}
+  #app{display:none}
+  .print-sheet{display:block;color:#000;padding:18px;font-size:11px}
+  .print-sheet h1{font-family:var(--disp);margin:0 0 4px;font-size:17px}
+  .print-sheet table{width:100%;border-collapse:collapse;margin-top:10px}
+  .print-sheet td,.print-sheet th{border:1px solid #bbb;padding:4px;text-align:center}
+  .print-sheet th:first-child,.print-sheet td:first-child{text-align:left}
+}
+</style>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+</head>
+<body>
+<div id="app"></div>
+<div id="print"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+/* =========================================================
+   Sportnoten – Notenverwaltung · v3.0.0
+   Entwickelt von Simon Mählmann
+========================================================= */
+const APP_NAME="Sportnoten", APP_SUB="Notenverwaltung", APP_VER="3.2.0", DEVELOPER="Simon Mählmann";
+
+const uid=()=>Math.random().toString(36).slice(2,10);
+const today=()=>new Date().toISOString().slice(0,10);
+const deDate=(iso)=>iso?iso.slice(8,10)+"."+iso.slice(5,7)+"."+iso.slice(0,4):"";
+const daysSince=(iso)=>iso?Math.floor((Date.now()-new Date(iso).getTime())/86400000):null;
+let SAFE_COLORS=false;
+
+/* ---------- Speicher ---------- */
+const store={
+  async get(k){
+    try{ if(window.storage){const r=await window.storage.get(k); return r?JSON.parse(r.value):null;} }catch(e){}
+    try{ const v=localStorage.getItem(k); return v?JSON.parse(v):null; }catch(e){}
+    return null;
+  },
+  async set(k,v){
+    try{ if(window.storage){await window.storage.set(k,JSON.stringify(v)); return;} }catch(e){}
+    try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){}
+  }
+};
+
+/* ---------- Krypto ---------- */
+const b64=(buf)=>btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64=(s)=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const hasCrypto=()=>!!(window.crypto&&window.crypto.subtle);
+async function sha256(txt){
+  if(!hasCrypto()) return "plain:"+txt;
+  const h=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(txt));
+  return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function deriveKey(pass,salt,use){
+  const km=await crypto.subtle.importKey("raw",new TextEncoder().encode(pass),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:200000,hash:"SHA-256"},km,{name:"AES-GCM",length:256},false,use);
+}
+async function encryptJson(obj,pass){
+  const salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await deriveKey(pass,salt,["encrypt"]);
+  const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,new TextEncoder().encode(JSON.stringify(obj)));
+  return {sportnoten:"encrypted",v:1,salt:b64(salt),iv:b64(iv),data:b64(ct)};
+}
+async function decryptJson(pkg,pass){
+  const key=await deriveKey(pass,unb64(pkg.salt),["decrypt"]);
+  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(pkg.iv)},key,unb64(pkg.data));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
+/* ---------- Icons ---------- */
+const P={
+  users:<g><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></g>,
+  whistle:<g><circle cx="8" cy="14" r="6"/><path d="M14 11h8v5h-8"/><path d="M8 8V4h6"/></g>,
+  ruler:<g><path d="M3 9h18v6H3z"/><path d="M7 9v3M11 9v4M15 9v3M19 9v4"/></g>,
+  chart:<g><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></g>,
+  settings:<g><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6 1.65 1.65 0 0 0 10 3.09V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V10a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></g>,
+  plus:<g><path d="M12 5v14M5 12h14"/></g>,
+  trash:<g><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></g>,
+  download:<g><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></g>,
+  upload:<g><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></g>,
+  printer:<g><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></g>,
+  note:<g><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></g>,
+  clock:<g><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></g>,
+  back:<g><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></g>,
+  moon:<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>,
+  copy:<g><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></g>,
+  shuffle:<g><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></g>,
+  lock:<g><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></g>,
+  calendar:<g><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></g>,
+  shield:<g><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></g>,
+  quote:<g><path d="M7 7h4v6a4 4 0 0 1-4 4"/><path d="M15 7h4v6a4 4 0 0 1-4 4"/></g>,
+  toggle:<g><rect x="1" y="5" width="22" height="14" rx="7"/><circle cx="16" cy="12" r="3"/></g>,
+  info:<g><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></g>,
+  flag:<g><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></g>,
+  swap:<g><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></g>,
+  eye:<g><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></g>,
+  pencil:<g><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></g>,
+};
+const Ic=({n,size=16,color,style})=>(
+  <svg className="ico" width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke={color||"currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>{P[n]}</svg>);
+
+/* ---------- Noten ---------- */
+const parseNote=(s)=>{
+  if(s===""||s==null) return null;
+  const str=String(s).trim().replace(",",".");
+  const m=str.match(/^(\d(?:\.\d+)?)\s*([+\-−])$/);
+  if(m){const b=parseFloat(m[1]); return Math.round((m[2]==="+"?b-0.3:b+0.3)*10)/10;}
+  const n=parseFloat(str); return isNaN(n)?null:n;
+};
+/* Rundung ohne Fließkomma-Überraschungen: 1,005 → 1,01 statt 1,00 */
+const round=(v,d=2)=>{ if(v==null||isNaN(v)) return v;
+  const p=Math.pow(10,d); return Math.round(Number((v*p).toPrecision(15)))/p; };
+const fmtNote=(n,d=2)=>{ if(n==null||isNaN(n)) return "–";
+  const r=round(n,d); return r.toFixed(r%1===0?0:d).replace(".",","); };
+/* Nur Noten von 1 bis 6 (inkl. Tendenz 0,7er-Schritte) gehen in die Berechnung ein */
+const NOTE_MIN=1, NOTE_MAX=6;
+const noteOf=(s)=>{ const n=parseNote(s); return (n!=null&&n>=NOTE_MIN&&n<=NOTE_MAX)?n:null; };
+const noteBad=(s)=>{ if(s===""||s==null) return false; const n=parseNote(s); return n==null||n<NOTE_MIN||n>NOTE_MAX; };
+const PTS=[[1.0,15],[1.3,14],[1.5,13],[1.7,13],[2.0,11],[2.3,10],[2.5,9],[2.7,9],[3.0,8],[3.3,7],[3.5,6],[3.7,6],[4.0,5],[4.3,4],[4.7,3],[5.0,2],[5.3,2],[5.7,1],[6.0,0]];
+const toPoints=(n)=>{if(n==null)return "–"; let b=PTS[0]; for(const p of PTS) if(Math.abs(p[0]-n)<Math.abs(b[0]-n)) b=p; return b[1];};
+const isDark=()=>document.documentElement.getAttribute("data-theme")==="dark";
+const noteColor=(n)=>{
+  if(n==null||isNaN(n)) return "var(--faint)";
+  const p=Math.max(0,Math.min(1,(6-n)/5));
+  const h=SAFE_COLORS?Math.round(28+p*192):Math.round(p*122);      /* sicher: Orange → Blau */
+  const sat=SAFE_COLORS?68:60;
+  return `hsl(${h},${sat}%,${isDark()?62:40}%)`;
+};
+const mean=(a)=>{const v=a.filter(x=>x!=null&&!isNaN(x)); return v.length?v.reduce((x,y)=>x+y,0)/v.length:null;};
+const wMean=(pairs)=>{let s=0,w=0; for(const [v,g] of pairs) if(v!=null&&!isNaN(v)&&g>0){s+=v*g;w+=g;} return w?s/w:null;};
+
+/* ---------- Messwerte ---------- */
+const UNITS=[["m","Meter"],["cm","Zentimeter"],["s","Sekunden"],["min","Minuten (mm:ss)"],["n","Anzahl / Wdh."],["p","Punkte"]];
+const GRADE_STEPS=[1,2,3,4,5,6];
+const parseVal=(s,unit)=>{
+  if(s===""||s==null) return null;
+  const str=String(s).trim().replace(",",".");
+  if(unit==="min"){const m=str.match(/^(\d+):(\d+(?:\.\d+)?)$/); if(m) return parseInt(m[1],10)*60+parseFloat(m[2]);}
+  const n=parseFloat(str); return isNaN(n)?null:n;
+};
+const fmtVal=(v,unit)=>{
+  if(v==null||isNaN(v)) return "";
+  if(unit==="min"){const m=Math.floor(v/60),s=v-m*60; return m+":"+(s<10?"0":"")+String(Number(s.toFixed(2))).replace(".",",");}
+  return String(Number(v.toFixed(2))).replace(".",",");
+};
+function gradeFromTable(tab,val,jg,gender){
+  if(!tab||val==null) return null;
+  const rows=tab.rows.filter(r=>String(r.jg)===String(jg)&&(r.gender===gender||r.gender==="x"));
+  const row=rows.find(r=>r.gender===gender)||rows[0];
+  if(!row) return null;
+  const th=GRADE_STEPS.map(g=>({g,v:parseVal(row.vals[g],tab.unit)})).filter(x=>x.v!=null);
+  if(!th.length) return null;
+  const ok=tab.better==="low"?(a,b)=>a<=b:(a,b)=>a>=b;
+  let note=null;
+  for(const x of th){ if(ok(val,x.v)){note=x.g;break;} }
+  if(note==null) note=6;
+  if(!tab.interpolate) return note;
+  const i=th.findIndex(x=>x.g===note);
+  if(i<=0) return note;
+  const span=Math.abs(th[i-1].v-th[i].v)||1;
+  return Math.round((note-Math.min(0.9,Math.abs(val-th[i].v)/span))*10)/10;
+}
+
+/* ---------- Vorlagen ---------- */
+const SPORT_PRESETS=[
+  {name:"Basketball",parts:[["Technik: Dribbling/Passen",30],["Technik: Korbleger/Wurf",30],["Spielfähigkeit",25],["Mitarbeit",15]]},
+  {name:"Fußball",parts:[["Ballan- und -mitnahme",30],["Passen/Torschuss",25],["Spielfähigkeit",30],["Mitarbeit",15]]},
+  {name:"Volleyball",parts:[["Pritschen",25],["Baggern",25],["Aufschlag",20],["Spielfähigkeit",20],["Mitarbeit",10]]},
+  {name:"Handball",parts:[["Passen/Fangen",25],["Sprungwurf",25],["Spielfähigkeit",35],["Mitarbeit",15]]},
+  {name:"Badminton / Tischtennis",parts:[["Schlagtechnik",40],["Spielfähigkeit",40],["Mitarbeit",20]]},
+  {name:"Kleine Spiele",parts:[["Spielverhalten & Fairness",40],["Regelverständnis",20],["Mitarbeit & Einsatz",40]]},
+  {name:"Turnen",parts:[["Boden",30],["Sprung",25],["Reck/Barren",25],["Mitarbeit, Helfen & Sichern",20]]},
+  {name:"Gymnastik / Tanz",parts:[["Bewegungsqualität",35],["Choreografie/Gestaltung",35],["Mitarbeit",30]]},
+  {name:"Fitness / Ausdauer",parts:[["Ausdauerleistung",50],["Trainingsverhalten",30],["Mitarbeit",20]]},
+  {name:"Leichtathletik",measures:[["50 m Sprint","s"],["Weitsprung","m"],["Schlagwurf","m"],["800 m Lauf","min"]],extra:[["Technik & Mitarbeit",25]]},
+  {name:"Schwimmen",measures:[["50 m Freistil","min"],["Streckentauchen","m"]],extra:[["Technik Beinschlag/Zug",25],["Mitarbeit",15]]},
+];
+const mkRows=(data)=>data.map(([jg,gender,...v])=>({id:uid(),jg:String(jg),gender,vals:{1:v[0],2:v[1],3:v[2],4:v[3],5:v[4],6:v[5]}}));
+const TABLE_PRESETS=()=>([
+  {id:uid(),name:"Schlagwurf (200-g-Ball)",unit:"m",better:"high",interpolate:false,rows:mkRows([
+    [5,"m",34,29,24,19,14,9],[5,"w",24,20,16,12,9,6],[6,"m",38,32,27,21,16,11],[6,"w",27,23,18,14,10,7],
+    [7,"m",42,36,30,24,18,12],[7,"w",30,25,20,16,12,8],[8,"m",46,39,32,26,20,14],[8,"w",32,27,22,17,13,9],
+    [9,"m",50,43,35,28,21,15],[9,"w",34,29,23,18,14,10],[10,"m",54,46,38,30,23,16],[10,"w",36,30,24,19,15,10]])},
+  {id:uid(),name:"50 m Sprint",unit:"s",better:"low",interpolate:false,rows:mkRows([
+    [5,"m",8.0,8.6,9.2,9.9,10.7,11.6],[5,"w",8.4,9.0,9.6,10.3,11.1,12.0],[6,"m",7.8,8.4,9.0,9.6,10.4,11.3],[6,"w",8.2,8.8,9.4,10.1,10.9,11.8],
+    [7,"m",7.5,8.1,8.7,9.3,10.1,11.0],[7,"w",8.0,8.6,9.2,9.9,10.7,11.6],[8,"m",7.2,7.8,8.4,9.0,9.8,10.7],[8,"w",7.9,8.5,9.1,9.8,10.6,11.5],
+    [9,"m",7.0,7.5,8.1,8.7,9.5,10.4],[9,"w",7.8,8.4,9.0,9.7,10.5,11.4],[10,"m",6.8,7.3,7.9,8.5,9.3,10.2],[10,"w",7.7,8.3,8.9,9.6,10.4,11.3]])},
+  {id:uid(),name:"Weitsprung",unit:"m",better:"high",interpolate:false,rows:mkRows([
+    [5,"m",3.80,3.40,3.00,2.60,2.20,1.80],[5,"w",3.50,3.15,2.80,2.45,2.10,1.75],[6,"m",4.00,3.60,3.20,2.80,2.40,2.00],[6,"w",3.70,3.35,3.00,2.65,2.30,1.95],
+    [7,"m",4.25,3.85,3.45,3.05,2.65,2.25],[7,"w",3.90,3.55,3.20,2.85,2.50,2.15],[8,"m",4.50,4.10,3.70,3.30,2.90,2.50],[8,"w",4.05,3.70,3.35,3.00,2.65,2.30],
+    [9,"m",4.75,4.30,3.90,3.50,3.10,2.70],[9,"w",4.20,3.85,3.50,3.15,2.80,2.45],[10,"m",5.00,4.55,4.10,3.65,3.25,2.85],[10,"w",4.35,4.00,3.65,3.30,2.95,2.60]])},
+  {id:uid(),name:"800 m Lauf",unit:"min",better:"low",interpolate:false,rows:mkRows([
+    [5,"m","3:20","3:40","4:00","4:25","4:50","5:20"],[5,"w","3:40","4:00","4:25","4:50","5:15","5:45"],
+    [7,"m","3:05","3:25","3:45","4:10","4:35","5:05"],[7,"w","3:30","3:50","4:15","4:40","5:05","5:35"],
+    [9,"m","2:55","3:15","3:35","4:00","4:25","4:55"],[9,"w","3:25","3:45","4:10","4:35","5:00","5:30"]])},
+  {id:uid(),name:"50 m Freistil",unit:"min",better:"low",interpolate:false,rows:mkRows([
+    [5,"m","0:45","0:52","1:00","1:10","1:22","1:35"],[5,"w","0:48","0:55","1:03","1:13","1:25","1:38"],
+    [7,"m","0:40","0:46","0:53","1:02","1:12","1:25"],[7,"w","0:43","0:49","0:56","1:05","1:15","1:28"],
+    [9,"m","0:36","0:42","0:48","0:56","1:05","1:18"],[9,"w","0:40","0:46","0:52","1:00","1:10","1:22"]])},
+]);
+const COMMENT_PRESETS=()=>[
+  "{N} zeigt im Sportunterricht durchgehend hohe Einsatzbereitschaft.",
+  "{N} arbeitet zuverlässig mit und hält sich an vereinbarte Regeln.",
+  "{N} übernimmt beim Auf- und Abbau sowie beim Helfen und Sichern Verantwortung.",
+  "{N} verhält sich in Spielsituationen fair und rücksichtsvoll.",
+  "{N} bringt das Sportzeug regelmäßig mit.",
+  "Die Mitarbeit von {N} ist stark von der Sportart abhängig.",
+  "{N} sollte häufiger aktiv am Unterrichtsgeschehen teilnehmen.",
+  "{N} konnte an Teilen des Halbjahres nicht aktiv teilnehmen; die Leistungen werden nachgeholt.",
+];
+
+/* ---------- Namenslisten einlesen ---------- */
+const GENDER_OF=(v)=>{const t=String(v||"").trim().toLowerCase();
+  if(/^(w|f|weiblich|female|m[äa]dchen)$/.test(t)) return "w";
+  if(/^(m|j|männlich|maennlich|male|junge)$/.test(t)) return "m";
+  return "x";};
+function parseNameList(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length) return [];
+  const delim=[";","\t",","].map(d=>({d,n:lines[0].split(d).length})).sort((a,b)=>b.n-a.n)[0];
+  const useCols=delim.n>1;
+  let map={last:0,first:1,gender:2}, start=0;
+  if(useCols){
+    const head=lines[0].split(delim.d).map(x=>x.trim().toLowerCase());
+    const find=(...keys)=>head.findIndex(h=>keys.some(k=>h.includes(k)));
+    const iL=find("nachname","familienname","zuname"), iF=find("vorname","rufname"), iG=find("geschlecht","gender","sex");
+    if(iL>=0||iF>=0){ map={last:iL>=0?iL:0,first:iF>=0?iF:1,gender:iG}; start=1; }
+  }
+  const out=[];
+  for(let i=start;i<lines.length;i++){
+    const line=lines[i].trim(); if(!line) continue;
+    let last="",first="",gender="x";
+    if(useCols){
+      const c=line.split(delim.d).map(x=>x.trim().replace(/^"|"$/g,""));
+      last=c[map.last]||""; first=map.first>=0?(c[map.first]||""):"";
+      gender=map.gender>=0?GENDER_OF(c[map.gender]):"x";
+      if(!first&&last.includes(",")){const p=last.split(","); last=p[0].trim(); first=(p[1]||"").trim();}
+      else if(!first&&last.includes(" ")){const p=last.split(/\s+/); first=p.slice(0,-1).join(" "); last=p[p.length-1];}
+    } else {
+      const gm=line.match(/\((m|w|d|x)\)\s*$/i);
+      gender=gm?GENDER_OF(gm[1]):"x";
+      const core=line.replace(/\((m|w|d|x)\)\s*$/i,"").trim();
+      if(core.includes(",")){const p=core.split(","); last=p[0].trim(); first=(p[1]||"").trim();}
+      else {const p=core.split(/\s+/); first=p.slice(0,-1).join(" "); last=p[p.length-1];}
+    }
+    if(!last&&!first) continue;
+    if(/^(nachname|name|vorname)$/i.test(last)) continue;
+    out.push(mkStudent(last,first,gender));
+  }
+  return out;
+}
+
+/* ---------- Datenmodell ---------- */
+const mkPart=(name,weight,type="manual",tableId=null,unit=null)=>({id:uid(),name,weight,type,tableId,unit});
+const mkSport=(name,parts)=>({id:uid(),name,weight:100,drop:0,parts:parts||[]});
+const mkStudent=(last,first,gender)=>({id:uid(),last,first,gender:gender||"x",notes:"",g:{},t:{}});
+const mkTerm=(label)=>({id:uid(),label,lessons:[],
+  sports:[mkSport("Kleine Spiele",[mkPart("Spielverhalten & Fairness",40),mkPart("Regelverständnis",20),mkPart("Mitarbeit & Einsatz",40)])]});
+const freshClass=(name)=>{const t=mkTerm("1. Halbjahr");
+  return {id:uid(),name,jg:(String(name).match(/\d+/)||["7"])[0],students:[],terms:[t],activeTerm:t.id};};
+const DEFAULT_FEATURES={
+  measures:true,attendance:true,stopwatch:true,todo:true,drop:false,log:false,
+  spiegel:false,points:false,notes:true,comments:false,teams:true,terms:true,compare:true,
+  hall:false,wide:false,safeColors:false,chips:true,backupReminder:true,webfonts:false};
+const freshState=()=>{const c=freshClass("7a");
+  return {v:3,dark:false,screen:"home",selClass:c.id,selSport:null,selStudent:null,selTable:null,onlyOpen:false,editStudent:null,
+    teacher:"",school:"",sort:"alpha",anon:false,pinHash:null,lastBackup:null,
+    features:{...DEFAULT_FEATURES},comments:COMMENT_PRESETS(),classes:[c],tables:TABLE_PRESETS()};};
+
+/* Migration älterer Sicherungen */
+function migrate(s){
+  if(!s||!s.classes) return null;
+  const classes=s.classes.map(c=>{
+    const cl={...c};
+    if(!cl.terms){
+      const t={id:uid(),label:"1. Halbjahr",sports:cl.sports||[],lessons:cl.lessons||[]};
+      cl.terms=[t]; cl.activeTerm=t.id; delete cl.sports; delete cl.lessons;
+    }
+    if(!cl.activeTerm) cl.activeTerm=cl.terms[0].id;
+    cl.terms=cl.terms.map(t=>({...t,sports:(t.sports||[]).map(sp=>({drop:0,...sp}))}));
+    cl.students=(cl.students||[]).map(st=>{
+      const s2={...st,g:st.g||{}};
+      if(!s2.t){ s2.t={}; s2.t[cl.activeTerm]={final:st.final||"",comment:st.comment||"",
+        absU:st.absU||0,absE:st.absE||0,forgot:st.forgot||0}; }
+      delete s2.final; delete s2.comment; delete s2.absU; delete s2.absE; delete s2.forgot;
+      return s2;
+    });
+    return cl;
+  });
+  return {...freshState(),...s,classes,features:{...DEFAULT_FEATURES,...(s.features||{})}};
+}
+
+/* ---------- Berechnung ---------- */
+const partEntry=(st,sportId,partId)=>((st.g&&st.g[sportId]||{})[partId]||{});
+const tof=(st,tid)=>((st.t||{})[tid]||{final:"",comment:"",absU:0,absE:0,forgot:0});
+const sportGrade=(st,sp)=>{
+  const vals=sp.parts.map(p=>({g:noteOf(partEntry(st,sp.id,p.id).n),w:Number(p.weight)||0}))
+                     .filter(x=>x.g!=null&&x.w>0);
+  const drop=Number(sp.drop)||0;
+  let use=vals;
+  if(drop>0&&vals.length-drop>=1) use=[...vals].sort((a,b)=>a.g-b.g).slice(0,vals.length-drop);
+  return wMean(use.map(x=>[x.g,x.w]));
+};
+const calcGrade=(st,term)=>wMean(term.sports.map(s=>[sportGrade(st,s),Number(s.weight)||0]));
+const totalGrade=(st,term)=>{const o=noteOf(tof(st,term.id).final); return o!=null?o:calcGrade(st,term);};
+const sortStudents=(list,mode,term)=>{
+  const a=[...list], byName=(x,y)=>(x.last+" "+x.first).localeCompare(y.last+" "+y.first,"de");
+  if(mode==="gender") a.sort((x,y)=>(x.gender||"x").localeCompare(y.gender||"x")||byName(x,y));
+  else if(mode==="note"&&term) a.sort((x,y)=>{const gx=totalGrade(x,term),gy=totalGrade(y,term);
+    if(gx==null&&gy==null) return byName(x,y); if(gx==null) return 1; if(gy==null) return -1;
+    return (gx-gy)||byName(x,y);});
+  else a.sort(byName);
+  return a;
+};
+const ATT=[["p","anw.","var(--green-soft)","var(--green)"],["e","ents.","var(--chip)","var(--sub)"],
+  ["u","unent.","var(--red-soft)","var(--red)"],["v","verg.","var(--warn-soft)","var(--warn)"],["z","versp.","var(--chip)","var(--sub)"]];
+const attCount=(term,stId,code)=>(term.lessons||[]).filter(l=>(l.marks||{})[stId]===code).length;
+const dispName=(st,anon)=>anon?((st.last||"?").slice(0,1).toUpperCase()+". "+(st.first||"").slice(0,2)):(st.last+", "+st.first);
+const progress=(students,term)=>{
+  let done=0,total=0;
+  students.forEach(st=>term.sports.forEach(sp=>sp.parts.forEach(p=>{
+    total++; if(noteOf(partEntry(st,sp.id,p.id).n)!=null) done++;})));
+  return {done,total,pct:total?done/total:0};
+};
+const sportProgress=(students,sp)=>{
+  let done=0,total=0;
+  students.forEach(st=>sp.parts.forEach(p=>{total++; if(noteOf(partEntry(st,sp.id,p.id).n)!=null) done++;}));
+  return {done,total,pct:total?done/total:0};
+};
+function allTodos(state){
+  const out=[];
+  state.classes.forEach(c=>c.terms.forEach(t=>t.sports.forEach(sp=>sp.parts.forEach(p=>
+    c.students.forEach(st=>{
+      const e=partEntry(st,sp.id,p.id);
+      if(e.todo) out.push({cls:c,term:t,sport:sp,part:p,st,date:e.todoDate||"",done:noteOf(e.n)!=null});
+    })))));
+  return out;
+}
+
+/* =========================================================
+   App
+========================================================= */
+function App(){
+  const [state,setState]=useState(freshState);
+  const [loaded,setLoaded]=useState(false);
+  const [unlocked,setUnlocked]=useState(false);
+  const [toast,setToast]=useState("");
+  const [undo,setUndo]=useState(null);
+  const saveT=useRef(null), fileRef=useRef(null), tabFileRef=useRef(null), undoRef=useRef(null);
+
+  useEffect(()=>{(async()=>{
+    const s=await store.get("sportnoten:data")||await store.get("sportnote:data");
+    const m=migrate(s); if(m) setState(m);
+    setLoaded(true);
+  })();},[]);
+  const stateRef=useRef(state); stateRef.current=state;
+  useEffect(()=>{ if(!loaded)return;
+    clearTimeout(saveT.current);
+    saveT.current=setTimeout(()=>store.set("sportnoten:data",state),250);
+    return ()=>clearTimeout(saveT.current);
+  },[state,loaded]);
+  /* Beim Schließen, Wegwischen oder Wechsel in den Hintergrund sofort schreiben –
+     zuverlässiger als eine Warnung über beforeunload, die mobil ohnehin oft ausbleibt. */
+  useEffect(()=>{ if(!loaded)return;
+    const flush=()=>{ clearTimeout(saveT.current); store.set("sportnoten:data",stateRef.current); };
+    const onVis=()=>{ if(document.visibilityState==="hidden") flush(); };
+    window.addEventListener("pagehide",flush);
+    document.addEventListener("visibilitychange",onVis);
+    return ()=>{ window.removeEventListener("pagehide",flush); document.removeEventListener("visibilitychange",onVis); };
+  },[loaded]);
+  useEffect(()=>{document.documentElement.setAttribute("data-theme",state.dark?"dark":"light");},[state.dark]);
+  useEffect(()=>{document.documentElement.setAttribute("data-hall",state.features.hall?"1":"0");},[state.features.hall]);
+  useEffect(()=>{document.documentElement.setAttribute("data-wide",state.features.wide?"1":"0");},[state.features.wide]);
+  useEffect(()=>{
+    const id="webfont-link", old=document.getElementById(id);
+    if(state.features.webfonts&&!old){
+      const l=document.createElement("link"); l.id=id; l.rel="stylesheet";
+      l.href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Karla:wght@400;600;700&display=swap";
+      document.head.appendChild(l);
+    } else if(!state.features.webfonts&&old) old.remove();
+  },[state.features.webfonts]);
+
+  SAFE_COLORS=!!state.features.safeColors;
+  const f=state.features;
+  const say=(m)=>{setToast(m); setTimeout(()=>setToast(""),3200);};
+  const up=(p)=>setState(s=>({...s,...p}));
+  const cls=state.classes.find(c=>c.id===state.selClass)||state.classes[0];
+  const term=cls?(cls.terms.find(t=>t.id===cls.activeTerm)||cls.terms[0]):null;
+  const upCls=(p)=>setState(s=>({...s,classes:s.classes.map(c=>c.id===(cls&&cls.id)?{...c,...p}:c)}));
+  const upTerm=(p)=>upCls({terms:cls.terms.map(t=>t.id===term.id?{...t,...p}:t)});
+  const upStudent=(id,p)=>upCls({students:cls.students.map(x=>x.id===id?{...x,...p}:x)});
+  const upT=(id,p)=>upCls({students:cls.students.map(x=>x.id===id?{...x,t:{...(x.t||{}),[term.id]:{...tof(x,term.id),...p}}}:x)});
+  const setEntry=(stId,sportId,partId,patch)=>upCls({students:cls.students.map(x=>{
+    if(x.id!==stId) return x;
+    const g={...(x.g||{})}, sp={...(g[sportId]||{})};
+    sp[partId]={...(sp[partId]||{v:"",n:"",auto:true}),...patch}; g[sportId]=sp; return {...x,g};
+  })});
+  /* Stabile Schreibfunktionen: verändern den Zustand über die Updater-Form,
+     hängen an keiner Render-Variablen und lassen deshalb React.memo wirken. */
+  const applyCell=useRef((clsId,stId,sportId,partId,kind,raw)=>{
+    setState(s=>{
+      const c=s.classes.find(x=>x.id===clsId); if(!c) return s;
+      const t=c.terms.find(t2=>t2.sports.some(sp=>sp.id===sportId)); if(!t) return s;
+      const sp=t.sports.find(x=>x.id===sportId), part=sp&&sp.parts.find(x=>x.id===partId);
+      const st=c.students.find(x=>x.id===stId);
+      if(!part||!st) return s;
+      const prev=partEntry(st,sportId,partId);
+      const patch={};
+      if(kind==="measure"){
+        const tab=s.tables.find(tb=>tb.id===part.tableId);
+        patch.v=raw;
+        if(prev.auto!==false){
+          const n=gradeFromTable(tab,parseVal(raw,tab?tab.unit:part.unit),c.jg,st.gender);
+          patch.n=n==null?"":String(n).replace(".",",");
+        }
+      } else { patch.n=raw; patch.auto=false; }
+      const students=c.students.map(x=>{
+        if(x.id!==stId) return x;
+        const g={...(x.g||{})}, e={...(g[sportId]||{})};
+        e[partId]={...(e[partId]||{v:"",n:"",auto:true}),...patch};
+        g[sportId]=e; return {...x,g};
+      });
+      let log=c.log||[];
+      if(s.features.log&&patch.n!==undefined&&(patch.n||"")!==(prev.n||"")){
+        log=[{ts:Date.now(),stId,sport:sp.name,part:part.name,from:prev.n||"",to:patch.n||""},...log].slice(0,500);
+      }
+      return {...s,classes:s.classes.map(x=>x.id===clsId?{...x,students,log}:x)};
+    });
+  }).current;
+  const toggleTodo=useRef((clsId,stId,sportId,partId,on,date)=>{
+    setState(s=>({...s,classes:s.classes.map(c=>{
+      if(c.id!==clsId) return c;
+      return {...c,students:c.students.map(x=>{
+        if(x.id!==stId) return x;
+        const g={...(x.g||{})}, e={...(g[sportId]||{})};
+        e[partId]={...(e[partId]||{v:"",n:"",auto:true}),todo:on,todoDate:on?(date||""):""};
+        g[sportId]=e; return {...x,g};
+      })};
+    })}));
+  }).current;
+  const openStudent=useRef((id)=>setState(s=>({...s,screen:"student",selStudent:id}))).current;
+  const editStudent=useRef((id)=>setState(s=>({...s,editStudent:id}))).current;
+  const setGender=useRef((clsId,stId,v)=>setState(s=>({...s,classes:s.classes.map(c=>
+    c.id!==clsId?c:{...c,students:c.students.map(x=>x.id===stId?{...x,gender:v}:x)})}))).current;
+  const remove=(label,mutate)=>{
+    const snapshot=state.classes; mutate();
+    clearTimeout(undoRef.current); setUndo({label,snapshot});
+    undoRef.current=setTimeout(()=>setUndo(null),7000);
+  };
+  const doUndo=()=>{clearTimeout(undoRef.current); if(undo) setState(s=>({...s,classes:undo.snapshot})); setUndo(null);};
+  useEffect(()=>{ if(cls&&term) renderPrint(state,cls,term); });
+
+  if(!loaded||!cls||!term) return null;
+  if(state.pinHash&&!unlocked) return <LockScreen hash={state.pinHash} onOk={()=>setUnlocked(true)}/>;
+
+  /* ---- Sicherung ---- */
+  const doExport=async(encrypted)=>{
+    let payload=state;
+    if(encrypted){
+      if(!hasCrypto()) return say("Verschlüsselung wird von diesem Browser nicht unterstützt.");
+      const pass=prompt("Passwort für die Sicherung (gut merken – ohne Passwort ist die Datei nicht lesbar):");
+      if(!pass) return;
+      payload=await encryptJson(state,pass);
+    }
+    const blob=new Blob([JSON.stringify(payload,null,encrypted?0:2)],{type:"application/json"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download="sportnoten-sicherung"+(encrypted?"-verschluesselt":"")+"-"+today()+".json"; a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),400);
+    up({lastBackup:today()});
+  };
+  const doImport=(file)=>{
+    const r=new FileReader();
+    r.onload=async()=>{
+      try{
+        let d=JSON.parse(r.result);
+        if(d.sportnoten==="encrypted"||d.sportnote==="encrypted"){
+          const pass=prompt("Passwort der Sicherung:"); if(!pass) return;
+          d=await decryptJson(d,pass);
+        }
+        const m=migrate(d); if(!m) throw 0;
+        up({pending:m,pendingPick:m.classes.map(c=>c.id),screen:"import"});
+      }catch(e){ say("Datei konnte nicht gelesen werden – falsches Passwort oder falsches Format."); }
+    };
+    r.readAsText(file);
+  };
+  const exportCsv=()=>{
+    const head=["Nachname","Vorname","Geschlecht",...term.sports.map(s=>s.name),"Gesamtnote","festgesetzt","unentsch.","entsch.","vergessen"];
+    const lines=[head.join(";")];
+    sortStudents(cls.students,state.sort,term).forEach(st=>{
+      const d=tof(st,term.id);
+      lines.push([st.last,st.first,st.gender,...term.sports.map(s=>fmtNote(sportGrade(st,s),1)),
+        fmtNote(totalGrade(st,term),1),d.final?"ja":"",
+        Number(d.absU||0)+attCount(term,st.id,"u"),Number(d.absE||0)+attCount(term,st.id,"e"),
+        Number(d.forgot||0)+attCount(term,st.id,"v")].join(";"));
+    });
+    const blob=new Blob(["\ufeff"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download=cls.name+"-"+term.label+".csv"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),400);
+  };
+
+  const snack = undo
+    ? <div className="snack"><span>{undo.label}</span><button onClick={doUndo}>↩ Rückgängig</button></div>
+    : toast ? <div className="snack"><span>{toast}</span></div> : null;
+
+  /* ================= INFO ================= */
+  if(state.screen==="about") return <About up={up}/>;
+
+  /* ================= EINSTELLUNGEN ================= */
+  if(state.screen==="settings"){
+    const setF=(k,v)=>up({features:{...state.features,[k]:v}});
+    const setPin=async()=>{
+      if(state.pinHash){ if(confirm("PIN entfernen?")) up({pinHash:null}); return; }
+      const p=prompt("Neue PIN (mindestens 4 Zeichen):"); if(!p||p.length<4) return say("PIN zu kurz.");
+      if(p!==prompt("PIN wiederholen:")) return say("PINs stimmen nicht überein.");
+      up({pinHash:await sha256(p)}); say("PIN gesetzt.");
+    };
+    const GROUPS=[
+      ["Erfassung",[
+        ["measures","Messwerte & Bewertungstabellen","Weiten und Zeiten eintragen, die Note kommt aus der Tabelle."],
+        ["stopwatch","Stoppuhr","Zeiten beim Zieleinlauf direkt übernehmen."],
+        ["attendance","Anwesenheit je Stunde","Stundenliste mit Datum, Fehlzeiten werden gezählt."],
+        ["todo","Nachholliste","Offene Leistungen markieren und über alle Klassen hinweg sehen."],
+        ["log","Notenlog","Hält fest, wann eine Note gesetzt oder geändert wurde. Erzeugt zusätzliche personenbezogene Daten."],
+      ]],
+      ["Berechnung & Auswertung",[
+        ["drop","Streichnote","Je Sportart die schlechteste Teilnote (oder zwei) aus der Wertung nehmen."],
+        ["terms","Halbjahre","Mehrere Zeiträume je Klasse mit eigenen Sportarten und Stunden."],
+        ["compare","Halbjahresvergleich","Gegenüberstellung der Noten aus zwei Zeiträumen."],
+        ["spiegel","Notenspiegel","Balkendiagramm der Notenverteilung."],
+        ["points","Punkte der Oberstufe","Zeigt zusätzlich 15–0 Punkte."],
+      ]],
+      ["Texte",[
+        ["notes","Notizen zu Personen","Freitextfeld im Profil."],
+        ["comments","Bemerkungs-Bausteine","Textbausteine für Zeugnisbemerkungen."],
+        ["teams","Gruppen losen","Zufällige Mannschaften aus der Klassenliste."],
+      ]],
+      ["Ansicht",[
+        ["chips","Noten als Chips","Note mit Balkenanzeige statt nur farbiger Zahl."],
+        ["safeColors","Farbenblind-freundlich","Orange-Blau statt Rot-Grün als Notenfarben."],
+        ["hall","Hallenmodus","Größere Zeilen, Felder und Tasten."],
+        ["wide","Breite Tabellenansicht","Nutzt die volle Breite von Tablet und Rechner."],
+        ["webfonts","Web-Schriften von Google laden","Aus: nur Schriften des Geräts, kein externer Abruf."],
+      ]],
+      ["Daten",[
+        ["backupReminder","Sicherungserinnerung","Meldet sich, wenn die letzte Sicherung länger als eine Woche her ist."],
+      ]],
+    ];
+    return (
+    <div className="wrap" style={{paddingTop:14}}>
+      <button className="btn-quiet" style={{border:"none",paddingLeft:0}} onClick={()=>up({screen:"home"})}><Ic n="back" size={14}/> Zurück</button>
+      <h1 className="brand" style={{fontSize:26,margin:"6px 0 6px"}}>Einstellungen</h1>
+      <div className="hint" style={{marginBottom:12}}>
+        Die App startet bewusst schlank: Notenspiegel, Bemerkungs-Bausteine, Streichnote und das Notenlog sind zu Beginn aus.
+        Schalte hier zu, was du wirklich brauchst – jederzeit und ohne dass Daten verloren gehen.
+      </div>
+
+      {GROUPS.map(([title,items])=>(
+        <div className="card" key={title}>
+          <h2 className="sec"><Ic n="toggle" size={14}/> {title}</h2>
+          {items.map(([k,name,desc],i)=>(
+            <div key={k} className="row" style={{justifyContent:"space-between",padding:"8px 0",borderTop:i?"1px solid var(--line)":"none"}}>
+              <div style={{flex:"1 1 200px"}}><strong>{name}</strong><div className="hint">{desc}</div></div>
+              <label className="switch"><input type="checkbox" checked={!!f[k]} onChange={e=>setF(k,e.target.checked)}/><span className="slider"></span></label>
+            </div>))}
+          {title==="Ansicht"&&(
+            <div className="row" style={{justifyContent:"space-between",padding:"8px 0",borderTop:"1px solid var(--line)"}}>
+              <div style={{flex:"1 1 200px"}}><strong><Ic n="moon" size={15}/> Dunkles Design</strong></div>
+              <label className="switch"><input type="checkbox" checked={state.dark} onChange={e=>up({dark:e.target.checked})}/><span className="slider"></span></label>
+            </div>)}
+        </div>))}
+
+      <div className="card">
+        <h2 className="sec"><Ic n="shield" size={14}/> Datenschutz & Sicherheit</h2>
+        <div className="row" style={{justifyContent:"space-between",padding:"8px 0"}}>
+          <div style={{flex:"1 1 200px"}}><strong>PIN beim Start</strong>
+            <div className="hint">{state.pinHash?"PIN ist aktiv.":"Schützt die Liste, wenn jemand anders das Gerät in die Hand nimmt."}</div></div>
+          <button className="btn-ghost" onClick={setPin}><Ic n="lock" size={14}/> {state.pinHash?"Ändern/Entfernen":"PIN setzen"}</button>
+        </div>
+        <div className="row" style={{justifyContent:"space-between",padding:"8px 0",borderTop:"1px solid var(--line)"}}>
+          <div style={{flex:"1 1 200px"}}><strong>Namen abkürzen</strong>
+            <div className="hint">Zeigt „M., Li“ statt des vollen Namens.</div></div>
+          <label className="switch"><input type="checkbox" checked={state.anon} onChange={e=>up({anon:e.target.checked})}/><span className="slider"></span></label>
+        </div>
+        <div className="warnbox" style={{marginTop:10}}>
+          <strong>Keine Gesundheitsdaten eintragen.</strong> Diagnosen, Atteste oder Angaben zu Krankheiten gehören nicht in eine App auf einem privaten Gerät.
+          Neutral notieren: „nimmt bis 12.04. nicht aktiv teil, Nachweis liegt der Schule vor“.
+        </div>
+      </div>
+
+      <div className="card">
+        <h2 className="sec">Angaben für den Ausdruck</h2>
+        <label className="lbl">Lehrkraft</label>
+        <input className="inp" style={{margin:"5px 0 12px"}} value={state.teacher} onChange={e=>up({teacher:e.target.value})}/>
+        <label className="lbl">Schule</label>
+        <input className="inp" style={{marginTop:5}} value={state.school} onChange={e=>up({school:e.target.value})}/>
+      </div>
+
+      {f.comments&&<CommentSettings state={state} up={up}/>}
+
+      <div className="card">
+        <h2 className="sec"><Ic n="download" size={14}/> Daten</h2>
+        <div className="row">
+          <button className="btn-ghost" onClick={()=>doExport(true)}><Ic n="lock" size={14}/> Verschlüsselt sichern</button>
+          <button className="btn-quiet" onClick={()=>doExport(false)}>Unverschlüsselt sichern</button>
+          <button className="btn-ghost" onClick={()=>fileRef.current.click()}><Ic n="upload" size={14}/> Sicherung laden</button>
+          <input ref={fileRef} type="file" accept=".json" style={{display:"none"}}
+            onChange={e=>{if(e.target.files[0])doImport(e.target.files[0]); e.target.value="";}}/>
+          <button className="btn-quiet" onClick={exportCsv}>CSV dieses Halbjahres</button>
+          <button className="btn-quiet" onClick={()=>window.print()}><Ic n="printer" size={14}/> Drucken</button>
+        </div>
+        <div className="hint" style={{marginTop:8}}>
+          Letzte Sicherung: {state.lastBackup?deDate(state.lastBackup)+" ("+daysSince(state.lastBackup)+" Tage her)":"noch keine"}.
+          Sicherungen mit Schülerdaten gehören verschlüsselt – auch auf dem USB-Stick.
+        </div>
+        <div style={{borderTop:"1px solid var(--line)",marginTop:12,paddingTop:12}}>
+          <button className="btn-danger" style={{width:"100%"}} onClick={()=>{
+            if(!confirm("Alle Klassen, Noten und Notizen unwiderruflich löschen?"))return;
+            const fresh=freshState(); setState(fresh); store.set("sportnoten:data",fresh); say("Alle Daten gelöscht.");}}>
+            <Ic n="trash" size={14}/> Schuljahresende: alle Daten löschen</button>
+        </div>
+      </div>
+      <div className="card"><div className="hint">{APP_NAME} – {APP_SUB} · Version {APP_VER} · {DEVELOPER}</div></div>
+      {snack}
+    </div>);
+  }
+
+  /* ================= SICHERUNG ÜBERNEHMEN ================= */
+  if(state.screen==="import"&&state.pending){
+    const pend=state.pending;
+    const picked=state.pendingPick||[];
+    const toggle=(id)=>up({pendingPick:picked.includes(id)?picked.filter(x=>x!==id):[...picked,id]});
+    const mergeSelected=()=>{
+      const add=pend.classes.filter(c=>picked.includes(c.id)).map(c=>{
+        const clash=state.classes.some(x=>x.id===c.id);
+        return clash?{...c,id:uid(),name:c.name+" (importiert)"}:c;
+      });
+      const names=new Set(state.tables.map(t=>t.name.toLowerCase()));
+      const newTables=(pend.tables||[]).filter(t=>!names.has(t.name.toLowerCase())).map(t=>({...t,id:uid()}));
+      up({classes:[...state.classes,...add],tables:[...state.tables,...newTables],
+        selClass:add.length?add[0].id:state.selClass,pending:null,pendingPick:null,screen:"home",
+        selSport:null,selStudent:null});
+      say(add.length+" Klasse(n) hinzugefügt"+(newTables.length?", "+newTables.length+" Tabelle(n) ergänzt":"")+".");
+    };
+    return (
+      <div className="wrap" style={{paddingTop:14}}>
+        <button className="btn-quiet" style={{border:"none",paddingLeft:0}}
+          onClick={()=>up({pending:null,pendingPick:null,screen:"settings"})}><Ic n="back" size={14}/> Abbrechen</button>
+        <h1 className="brand" style={{fontSize:26,margin:"6px 0 4px"}}>Sicherung übernehmen</h1>
+        <div className="hint" style={{marginBottom:12}}>
+          Die Datei enthält {pend.classes.length} Klasse(n) und {(pend.tables||[]).length} Bewertungstabelle(n).
+          Du kannst alles ersetzen oder nur einzelne Klassen zu deinem Bestand hinzufügen – das ist der Weg, wenn du zwischen Tablet und Rechner abgleichst.
+        </div>
+        <div className="card">
+          <h2 className="sec">Klassen in der Datei</h2>
+          {pend.classes.map(c=>{
+            const on=picked.includes(c.id);
+            const known=state.classes.some(x=>x.id===c.id);
+            return (
+            <div key={c.id} className="row" style={{justifyContent:"space-between",borderTop:"1px solid var(--line)",padding:"9px 0"}}>
+              <label className="row" style={{gap:8,flex:1,cursor:"pointer"}}>
+                <input type="checkbox" checked={on} onChange={()=>toggle(c.id)}/>
+                <span>
+                  <strong style={{fontSize:15}}>{c.name}</strong>
+                  <div className="hint">{c.students.length} Personen · {c.terms.length} Zeitraum/Zeiträume · Jg. {c.jg}</div>
+                </span>
+              </label>
+              {known&&<span className="pill" style={{background:"var(--warn-soft)",color:"var(--warn)"}}>gibt es hier schon – wird als Kopie angelegt</span>}
+            </div>);})}
+        </div>
+        <div className="card">
+          <div className="row">
+            <button className="btn" onClick={mergeSelected} disabled={picked.length===0}>
+              <Ic n="upload" size={14}/> {picked.length} Klasse(n) hinzufügen</button>
+            <button className="btn-quiet" onClick={()=>{
+              if(!confirm("Alle vorhandenen Daten durch die Sicherung ersetzen?"))return;
+              setState({...pend,pending:null,pendingPick:null,screen:"home"}); say("Sicherung vollständig geladen.");}}>
+              Alles ersetzen</button>
+            <button className="btn-quiet" onClick={()=>up({pending:null,pendingPick:null,screen:"settings"})}>Abbrechen</button>
+          </div>
+          <div className="hint" style={{marginTop:8}}>
+            Beim Hinzufügen bleiben deine jetzigen Klassen unverändert. Namen und Noten werden nicht zusammengeführt, sondern als eigene Klasse abgelegt – so geht nichts stillschweigend verloren.
+          </div>
+        </div>
+        {snack}
+      </div>);
+  }
+
+  /* ================= NACHHOLLISTE ================= */
+  if(state.screen==="todo"&&f.todo){
+    const items=allTodos(state);
+    const open=items.filter(i=>!i.done), done=items.filter(i=>i.done);
+    return (
+      <div className="wrap" style={{paddingTop:14}}>
+        <button className="btn-quiet" style={{border:"none",paddingLeft:0}} onClick={()=>up({screen:"home"})}><Ic n="back" size={14}/> Zurück</button>
+        <h1 className="brand" style={{fontSize:26,margin:"6px 0 4px"}}>Nachholliste</h1>
+        <div className="hint" style={{marginBottom:12}}>Alle als „nachzuholen“ markierten Leistungen – über alle Klassen und Halbjahre hinweg.</div>
+        <div className="card">
+          <h2 className="sec"><Ic n="flag" size={14}/> Offen ({open.length})</h2>
+          {open.length===0&&<div className="hint">Nichts offen.</div>}
+          {open.map((i,k)=>(
+            <div key={k} className="row" style={{justifyContent:"space-between",borderTop:k?"1px solid var(--line)":"none",padding:"8px 0"}}>
+              <div>
+                <strong style={{fontSize:15}}>{dispName(i.st,state.anon)}</strong>
+                <div className="hint">{i.cls.name} · {i.term.label} · {i.sport.name} → {i.part.name}</div>
+              </div>
+              <div className="row">
+                {i.date&&<span className="pill">Termin {deDate(i.date)}</span>}
+                <button className="btn-quiet" onClick={()=>up({selClass:i.cls.id,screen:"sport",selSport:i.sport.id,selStudent:null})}>öffnen</button>
+              </div>
+            </div>))}
+        </div>
+        {done.length>0&&(
+          <div className="card">
+            <h2 className="sec">Inzwischen benotet ({done.length})</h2>
+            {done.map((i,k)=>(
+              <div key={k} className="row" style={{justifyContent:"space-between",borderTop:k?"1px solid var(--line)":"none",padding:"6px 0"}}>
+                <span className="hint">{dispName(i.st,state.anon)} · {i.cls.name} · {i.sport.name} → {i.part.name}</span>
+                <NoteChip n={noteOf(partEntry(i.st,i.sport.id,i.part.id).n)} chips={f.chips}/>
+              </div>))}
+            <div className="hint" style={{marginTop:8}}>Markierungen kannst du in der Erfassung mit dem Fähnchen wieder entfernen.</div>
+          </div>)}
+        {snack}
+      </div>);
+  }
+
+  /* ================= HALBJAHRESVERGLEICH ================= */
+  if(state.screen==="compare"&&f.compare){
+    const list=sortStudents(cls.students,state.sort,term);
+    return (
+      <div className="wrap" style={{paddingTop:14}}>
+        <button className="btn-quiet" style={{border:"none",paddingLeft:0}} onClick={()=>up({screen:"home"})}><Ic n="back" size={14}/> {cls.name}</button>
+        <h1 className="brand" style={{fontSize:26,margin:"6px 0 4px"}}>Halbjahresvergleich</h1>
+        <div className="hint" style={{marginBottom:12}}>Gesamtnoten der Klasse {cls.name} in allen angelegten Zeiträumen. Ein Pfeil zeigt die Entwicklung vom ersten zum letzten Zeitraum.</div>
+        <div className="card">
+          <div className="row" style={{marginBottom:10}}>
+            {cls.terms.map(t=>(
+              <span key={t.id} className="pill" style={{background:"var(--accent-soft)",color:"var(--accent)"}}>
+                {t.label} · Ø {fmtNote(mean(cls.students.map(st=>totalGrade(st,t))),2)}</span>))}
+          </div>
+          <div className="scroll"><table className="grid">
+            <thead><tr><th className="l stick">Name</th>{cls.terms.map(t=><th key={t.id}>{t.label}</th>)}<th>Entwicklung</th></tr></thead>
+            <tbody>{list.map(st=>{
+              const vals=cls.terms.map(t=>totalGrade(st,t));
+              const first=vals.find(v=>v!=null), last=[...vals].reverse().find(v=>v!=null);
+              const d=(first!=null&&last!=null&&vals.filter(v=>v!=null).length>1)?first-last:null;
+              return (
+              <tr key={st.id}>
+                <td className="l stick">{dispName(st,state.anon)}</td>
+                {vals.map((v,i)=><td key={i}><NoteChip n={v} chips={f.chips}/></td>)}
+                <td style={{fontWeight:700,color:d==null?"var(--faint)":d>0.05?"var(--green)":d<-0.05?"var(--red)":"var(--sub)"}}>
+                  {d==null?"–":d>0.05?"▲ "+fmtNote(Math.abs(d),1):d<-0.05?"▼ "+fmtNote(Math.abs(d),1):"gleich"}
+                </td>
+              </tr>);})}</tbody>
+          </table></div>
+          <div className="hint" style={{marginTop:8}}>▲ bedeutet Verbesserung (kleinere Note), ▼ Verschlechterung.</div>
+        </div>
+        {snack}
+      </div>);
+  }
+
+  /* ================= BEWERTUNGSTABELLEN ================= */
+  if(state.screen==="tables"&&f.measures){
+    const tab=state.tables.find(t=>t.id===state.selTable);
+    const upTab=(p)=>up({tables:state.tables.map(t=>t.id===tab.id?{...t,...p}:t)});
+    const importCsv=(text)=>{
+      const rows=[];
+      text.split(/\r?\n/).forEach(line=>{
+        const c=line.split(/[;\t,]/).map(x=>x.trim());
+        if(c.length<8||!/^\d+$/.test(c[0])) return;
+        rows.push({id:uid(),jg:c[0],gender:GENDER_OF(c[1]),vals:{1:c[2],2:c[3],3:c[4],4:c[5],5:c[6],6:c[7]}});
+      });
+      if(!rows.length) return say("Keine gültigen Zeilen. Format: Jahrgang;m/w;Note1;…;Note6");
+      upTab({rows:[...tab.rows,...rows]}); say(rows.length+" Zeilen übernommen.");
+    };
+    if(tab) return (
+      <div className="wrap" style={{paddingTop:14}}>
+        <button className="btn-quiet" style={{border:"none",paddingLeft:0}} onClick={()=>up({selTable:null})}><Ic n="back" size={14}/> Alle Tabellen</button>
+        <div className="card">
+          <div className="row">
+            <input className="inp" style={{flex:"2 1 200px",fontWeight:700}} value={tab.name} onChange={e=>upTab({name:e.target.value})}/>
+            <select className="inp" style={{flex:"1 1 130px"}} value={tab.unit} onChange={e=>upTab({unit:e.target.value})}>
+              {UNITS.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
+            <select className="inp" style={{flex:"1 1 160px"}} value={tab.better} onChange={e=>upTab({better:e.target.value})}>
+              <option value="high">Mehr ist besser</option><option value="low">Weniger ist besser (Zeit)</option></select>
+            <label className="row" style={{gap:6}}><input type="checkbox" checked={!!tab.interpolate}
+              onChange={e=>upTab({interpolate:e.target.checked})}/><span className="hint">Zwischennoten</span></label>
+          </div>
+        </div>
+        <div className="card">
+          <h2 className="sec">Notenschwellen</h2>
+          <div className="hint" style={{marginBottom:8}}>Der Wert ist die Mindestleistung für diese Note.{tab.unit==="min"&&" Zeiten als mm:ss, z. B. 4:15."}</div>
+          <div className="scroll"><table className="grid">
+            <thead><tr><th className="l stick">Jg.</th><th>Geschl.</th>{GRADE_STEPS.map(g=><th key={g}>Note {g}</th>)}<th></th></tr></thead>
+            <tbody>{tab.rows.map(r=>(
+              <tr key={r.id}>
+                <td className="stick"><input className="cell" style={{width:52}} value={r.jg}
+                  onChange={e=>upTab({rows:tab.rows.map(x=>x.id===r.id?{...x,jg:e.target.value.replace(/\D/g,"")}:x)})}/></td>
+                <td><select className="cell" style={{width:64}} value={r.gender}
+                  onChange={e=>upTab({rows:tab.rows.map(x=>x.id===r.id?{...x,gender:e.target.value}:x)})}>
+                  <option value="m">m</option><option value="w">w</option><option value="x">alle</option></select></td>
+                {GRADE_STEPS.map(g=>(
+                  <td key={g}><input className="cell" style={{width:66}} value={r.vals[g]??""}
+                    onChange={e=>upTab({rows:tab.rows.map(x=>x.id===r.id?{...x,vals:{...x.vals,[g]:e.target.value}}:x)})}/></td>))}
+                <td><button className="xbtn" onClick={()=>upTab({rows:tab.rows.filter(x=>x.id!==r.id)})}>✕</button></td>
+              </tr>))}</tbody>
+          </table></div>
+          <button className="btn-ghost" style={{marginTop:10}}
+            onClick={()=>upTab({rows:[...tab.rows,{id:uid(),jg:cls.jg,gender:"m",vals:{}}]})}><Ic n="plus" size={14}/> Zeile</button>
+        </div>
+        <div className="card">
+          <h2 className="sec">Vorlage hochladen</h2>
+          <div className="hint">CSV oder eingefügter Text, je Zeile: <code>7;m;42;36;30;24;18;12</code></div>
+          <div className="row" style={{marginTop:8}}>
+            <button className="btn-ghost" onClick={()=>tabFileRef.current.click()}><Ic n="upload" size={14}/> CSV wählen</button>
+            <input ref={tabFileRef} type="file" accept=".csv,.txt" style={{display:"none"}}
+              onChange={e=>{const file=e.target.files[0]; if(file){const r=new FileReader(); r.onload=()=>importCsv(String(r.result)); r.readAsText(file);} e.target.value="";}}/>
+          </div>
+          <PasteBox onPaste={importCsv}/>
+        </div>
+        <button className="btn-danger" style={{width:"100%"}} onClick={()=>{
+          if(!confirm("Tabelle löschen?"))return; up({tables:state.tables.filter(t=>t.id!==tab.id),selTable:null});}}>
+          <Ic n="trash" size={14}/> Tabelle löschen</button>
+        {snack}
+      </div>);
+    return (
+      <div className="wrap" style={{paddingTop:14}}>
+        <button className="btn-quiet" style={{border:"none",paddingLeft:0}} onClick={()=>up({screen:"home"})}><Ic n="back" size={14}/> Zurück</button>
+        <h1 className="brand" style={{fontSize:26,margin:"6px 0 4px"}}>Bewertungstabellen</h1>
+        <div className="hint" style={{marginBottom:12}}>Die mitgelieferten Werte sind Beispielwerte und müssen an die Vorgaben deines Bundeslands angepasst werden.</div>
+        {state.tables.map(t=>(
+          <button key={t.id} className="card row" style={{width:"100%",textAlign:"left",border:"none",cursor:"pointer",justifyContent:"space-between"}}
+            onClick={()=>up({selTable:t.id})}>
+            <span><strong style={{fontSize:16}}>{t.name}</strong>
+              <div className="hint">{t.rows.length} Zeilen · {(UNITS.find(u=>u[0]===t.unit)||["",""])[1]} · {t.better==="low"?"Zeit":"mehr ist besser"}</div></span>
+            <span className="pill">öffnen ›</span></button>))}
+        <div className="row">
+          <button className="btn" onClick={()=>{const t={id:uid(),name:"Neue Tabelle",unit:"m",better:"high",interpolate:false,rows:[]};
+            up({tables:[...state.tables,t],selTable:t.id});}}><Ic n="plus" size={14}/> Neue Tabelle</button>
+          <button className="btn-quiet" onClick={()=>up({tables:[...state.tables,...TABLE_PRESETS()]})}>Beispieltabellen laden</button>
+        </div>
+        {snack}
+      </div>);
+  }
+
+  /* ================= ANWESENHEIT ================= */
+  if(state.screen==="attendance"&&f.attendance){
+    const lessons=[...(term.lessons||[])].sort((a,b)=>b.date.localeCompare(a.date));
+    const upLesson=(id,p)=>upTerm({lessons:term.lessons.map(l=>l.id===id?{...l,...p}:l)});
+    return (
+      <div className="wrap" style={{paddingTop:14}}>
+        <button className="btn-quiet" style={{border:"none",paddingLeft:0}} onClick={()=>up({screen:"home"})}><Ic n="back" size={14}/> {cls.name}</button>
+        <h1 className="brand" style={{fontSize:24,margin:"6px 0 10px"}}>Anwesenheit · {term.label}</h1>
+        <div className="card">
+          <div className="row">
+            <button className="btn" onClick={()=>upTerm({lessons:[...(term.lessons||[]),{id:uid(),date:today(),topic:"",marks:{}}]})}>
+              <Ic n="plus" size={14}/> Stunde für heute</button>
+            <span className="hint">{(term.lessons||[]).length} erfasste Stunden</span>
+          </div>
+        </div>
+        {lessons.map(l=>(
+          <div key={l.id} className="card">
+            <div className="row" style={{justifyContent:"space-between"}}>
+              <div className="row">
+                <input className="inp" type="date" style={{width:165}} value={l.date} onChange={e=>upLesson(l.id,{date:e.target.value})}/>
+                <input className="inp" style={{flex:"1 1 160px"}} placeholder="Thema der Stunde" value={l.topic} onChange={e=>upLesson(l.id,{topic:e.target.value})}/>
+              </div>
+              <div className="row">
+                <button className="btn-quiet" onClick={()=>{const m={}; cls.students.forEach(s=>m[s.id]="p"); upLesson(l.id,{marks:m});}}>Alle anwesend</button>
+                <button className="xbtn" onClick={()=>remove("Stunde vom "+deDate(l.date)+" gelöscht",
+                  ()=>upTerm({lessons:term.lessons.filter(x=>x.id!==l.id)}))}>✕</button>
+              </div>
+            </div>
+            <div style={{marginTop:10}}>
+              {sortStudents(cls.students,state.sort,term).map(st=>{
+                const v=(l.marks||{})[st.id];
+                return (
+                <div key={st.id} className="row" style={{justifyContent:"space-between",borderTop:"1px solid var(--line)",padding:"5px 0"}}>
+                  <span style={{fontSize:14,fontWeight:600}}>{dispName(st,state.anon)}</span>
+                  <span className="row" style={{gap:4}}>
+                    {ATT.map(([code,label,bg,col])=>(
+                      <button key={code} className="att" title={label}
+                        onClick={()=>upLesson(l.id,{marks:{...(l.marks||{}),[st.id]:v===code?undefined:code}})}
+                        style={{background:v===code?bg:"var(--card)",color:v===code?col:"var(--faint)",
+                          border:"1.5px solid "+(v===code?col:"var(--border)")}}>{code.toUpperCase()}</button>))}
+                  </span>
+                </div>);})}
+            </div>
+            <div className="hint" style={{marginTop:8}}>P anwesend · E entschuldigt · U unentschuldigt · V Sportzeug vergessen · Z verspätet</div>
+          </div>))}
+        {lessons.length===0&&<div className="card hint">Noch keine Stunde erfasst.</div>}
+        {snack}
+      </div>);
+  }
+
+  /* ================= SCHÜLERPROFIL ================= */
+  const stu=cls.students.find(s=>s.id===state.selStudent);
+  if(state.screen==="student"&&stu){
+    const d=tof(stu,term.id);
+    const tot=totalGrade(stu,term);
+    const sums={u:Number(d.absU||0)+attCount(term,stu.id,"u"),e:Number(d.absE||0)+attCount(term,stu.id,"e"),v:Number(d.forgot||0)+attCount(term,stu.id,"v")};
+    return (
+      <div className="wrap" style={{paddingTop:14}}>
+        <button className="btn-quiet" style={{border:"none",paddingLeft:0}} onClick={()=>up({screen:"home",selStudent:null})}><Ic n="back" size={14}/> {cls.name}</button>
+        <div className="card" style={{background:"linear-gradient(135deg,var(--hero1),var(--hero2))",color:"#fff"}}>
+          <div className="row" style={{justifyContent:"space-between"}}>
+            <div>
+              <div className="brand" style={{fontSize:22,color:"#fff"}}>{dispName(stu,state.anon)}</div>
+              <div style={{fontSize:13,color:"var(--hero-ink)"}}>{cls.name} · Jg. {cls.jg} · {term.label} · {stu.gender==="m"?"männlich":stu.gender==="w"?"weiblich":"ohne Angabe"}</div>
+            </div>
+            <div style={{textAlign:"center"}}>
+              <div className="brand" style={{fontSize:34,color:"#fff"}}>{fmtNote(tot,1)}</div>
+              <div style={{fontSize:11,color:"var(--hero-ink)",fontWeight:700}}>Gesamtnote{f.points&&tot!=null?" · "+toPoints(tot)+" P":""}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <h2 className="sec">Endnote</h2>
+          <div className="row">
+            <div><div className="lbl">Rechnerisch</div>
+              <div className="brand" style={{fontSize:24,color:noteColor(calcGrade(stu,term))}}>{fmtNote(calcGrade(stu,term),1)}</div></div>
+            <div style={{fontSize:20,color:"var(--border)"}}>→</div>
+            <div><div className="lbl">Festgesetzt</div>
+              <input className={"cell"+(noteBad(d.final)?" bad":"")} style={{width:86,color:noteColor(noteOf(d.final))}}
+                value={d.final||""} placeholder="–" inputMode="decimal"
+                onChange={e=>upT(stu.id,{final:e.target.value.replace(/[^0-9.,+\-−]/g,"")})}/>
+              {noteBad(d.final)&&<div className="hint" style={{color:"var(--red)",fontWeight:700}}>Nur 1 bis 6</div>}</div>
+            <div className="hint" style={{flex:"1 1 200px"}}>Der rechnerische Wert ist ein Vorschlag. Trägst du hier etwas ein, gilt diese Note überall. Feld leeren stellt den Vorschlag wieder her.</div>
+          </div>
+        </div>
+
+        <div className="card">
+          <h2 className="sec">Noten je Sportart</h2>
+          {term.sports.map(sp=>{const g=sportGrade(stu,sp);
+            return (
+            <div key={sp.id} style={{borderTop:"1px solid var(--line)",padding:"9px 0"}}>
+              <div className="row" style={{justifyContent:"space-between"}}>
+                <strong>{sp.name} <span className="pill">Gewicht {sp.weight}</span>
+                  {f.drop&&Number(sp.drop)>0&&<span className="pill" style={{marginLeft:5}}>Streichnote {sp.drop}</span>}</strong>
+                <NoteChip n={g} chips={f.chips}/>
+              </div>
+              <div className="row" style={{marginTop:6,gap:6}}>
+                {sp.parts.map(p=>{const e=partEntry(stu,sp.id,p.id);
+                  return <span key={p.id} className="pill" style={{color:noteColor(parseNote(e.n))}}>
+                    {p.name}: {e.n?fmtNote(parseNote(e.n),1):"–"}{p.type==="measure"&&e.v?" ("+e.v+")":""}{e.todo&&!e.n?" ⚑":""}</span>;})}
+              </div>
+            </div>);})}
+        </div>
+
+        <div className="card">
+          <h2 className="sec"><Ic n="calendar" size={14}/> Fehlzeiten · {term.label}</h2>
+          <div className="row">
+            {[["absU","unentschuldigt","u"],["absE","entschuldigt","e"],["forgot","Sportzeug vergessen","v"]].map(([k,l,code])=>(
+              <div key={k} style={{flex:"1 1 150px"}}>
+                <div className="lbl" style={{marginBottom:4}}>{l}</div>
+                <div className="row" style={{gap:6}}>
+                  <input className="cell" style={{width:60}} inputMode="numeric" value={d[k]||0}
+                    onChange={e=>upT(stu.id,{[k]:e.target.value.replace(/\D/g,"")})}/>
+                  {f.attendance&&<span className="pill">+ {attCount(term,stu.id,code)} erfasst = <strong>{sums[code]}</strong></span>}
+                </div>
+              </div>))}
+          </div>
+        </div>
+
+        {f.notes&&(
+        <div className="card">
+          <h2 className="sec"><Ic n="note" size={14}/> Notizen</h2>
+          <textarea className="ta" value={stu.notes||""} placeholder="z. B. nimmt bis 12.04. nicht aktiv teil, Nachweis liegt der Schule vor"
+            onChange={e=>upStudent(stu.id,{notes:e.target.value})}/>
+          <div className="warnbox" style={{marginTop:8}}>Bitte keine Diagnosen oder Angaben zu Krankheiten notieren.</div>
+        </div>)}
+
+        {f.comments&&(
+        <div className="card">
+          <h2 className="sec"><Ic n="quote" size={14}/> Bemerkung fürs Zeugnis</h2>
+          <textarea className="ta" value={d.comment||""} onChange={e=>upT(stu.id,{comment:e.target.value})}/>
+          <div className="row" style={{marginTop:8,gap:6}}>
+            {state.comments.map((c,i)=>(
+              <button key={i} className="tab" style={{fontSize:12,fontWeight:600,whiteSpace:"normal",textAlign:"left"}}
+                onClick={()=>upT(stu.id,{comment:((d.comment||"")+" "+c.replace(/\{N\}/g,stu.first||stu.last)).trim()})}>
+                {c.replace(/\{N\}/g,stu.first||stu.last)}</button>))}
+          </div>
+          <div className="row" style={{marginTop:8}}>
+            <button className="btn-quiet" onClick={()=>{navigator.clipboard&&navigator.clipboard.writeText(d.comment||""); say("Bemerkung kopiert.");}}>
+              <Ic n="copy" size={14}/> Kopieren</button>
+            <button className="btn-quiet" onClick={()=>upT(stu.id,{comment:""})}>Leeren</button>
+          </div>
+        </div>)}
+
+        {f.log&&(()=>{
+          const entries=(cls.log||[]).filter(l=>l.stId===stu.id).slice(0,40);
+          return (
+          <div className="card">
+            <h2 className="sec"><Ic n="clock" size={14}/> Notenlog</h2>
+            {entries.length===0
+              ? <div className="hint">Seit dem Einschalten des Logs wurde für diese Person noch keine Note geändert.</div>
+              : entries.map((l,i)=>(
+                <div key={i} className="row" style={{justifyContent:"space-between",borderTop:i?"1px solid var(--line)":"none",padding:"6px 0"}}>
+                  <span className="hint">{new Date(l.ts).toLocaleString("de-DE")} · {l.sport} → {l.part}</span>
+                  <span style={{fontWeight:700,fontSize:14}}>
+                    <span style={{color:"var(--faint)"}}>{l.from||"–"}</span> → <span style={{color:noteColor(noteOf(l.to))}}>{l.to||"–"}</span>
+                  </span>
+                </div>))}
+            <div className="hint" style={{marginTop:8}}>
+              Hält fest, wann eine Note gesetzt oder geändert wurde – hilfreich für Elterngespräche. Es werden höchstens 500 Einträge je Klasse aufbewahrt.
+            </div>
+            {(cls.log||[]).length>0&&
+              <button className="btn-quiet" style={{marginTop:8}}
+                onClick={()=>{if(confirm("Notenlog dieser Klasse löschen?")) upCls({log:[]});}}>Log dieser Klasse löschen</button>}
+          </div>);})()}
+
+        <div className="card">
+          <h2 className="sec"><Ic n="shield" size={14}/> Auskunft nach Art. 15 DSGVO</h2>
+          <div className="hint" style={{marginBottom:8}}>Textdatei mit allen zu dieser Person gespeicherten Daten – zur Weitergabe an die Schule.</div>
+          <button className="btn-ghost" onClick={()=>{
+            const L=[];
+            L.push(APP_NAME+" – Auskunft über gespeicherte Daten, Stand "+new Date().toLocaleDateString("de-DE"));
+            L.push("Person: "+stu.last+", "+stu.first+" · Geschlecht: "+stu.gender+" · Klasse: "+cls.name+" (Jg. "+cls.jg+")");
+            cls.terms.forEach(t=>{
+              const td=tof(stu,t.id);
+              L.push(""); L.push("=== "+t.label+" ===");
+              t.sports.forEach(sp=>{
+                L.push("Sportart "+sp.name+" (Gewicht "+sp.weight+"): Note "+fmtNote(sportGrade(stu,sp),1));
+                sp.parts.forEach(pt=>{const e=partEntry(stu,sp.id,pt.id);
+                  L.push("   – "+pt.name+" ("+pt.weight+" %): "+(e.v?("Messwert "+e.v+", "):"")+"Note "+(e.n||"–")+(e.todo?" [nachzuholen]":""));});
+              });
+              L.push("Rechnerische Gesamtnote: "+fmtNote(calcGrade(stu,t),1));
+              L.push("Festgesetzte Note: "+(td.final||"– keine –"));
+              L.push("Fehlzeiten: unentschuldigt "+(Number(td.absU||0)+attCount(t,stu.id,"u"))
+                +", entschuldigt "+(Number(td.absE||0)+attCount(t,stu.id,"e"))
+                +", Sportzeug vergessen "+(Number(td.forgot||0)+attCount(t,stu.id,"v")));
+              (t.lessons||[]).slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(l=>{
+                const m=(l.marks||{})[stu.id]; if(m) L.push("   "+deDate(l.date)+" "+(l.topic||"")+": "+m.toUpperCase());});
+              L.push("Bemerkung: "+(td.comment||"– keine –"));
+            });
+            L.push(""); L.push("Notizen: "+(stu.notes||"– keine –"));
+            const blob=new Blob([L.join("\n")],{type:"text/plain;charset=utf-8"});
+            const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+            a.download="auskunft-"+stu.last+"-"+stu.first+".txt"; a.click();
+            setTimeout(()=>URL.revokeObjectURL(a.href),400);}}>
+            <Ic n="download" size={14}/> Auskunft erstellen</button>
+        </div>
+
+        <button className="btn-danger" style={{width:"100%"}} onClick={()=>remove(dispName(stu,state.anon)+" gelöscht",()=>{
+          upCls({students:cls.students.filter(x=>x.id!==stu.id)}); up({screen:"home",selStudent:null});})}>
+          <Ic n="trash" size={14}/> Schüler/in löschen</button>
+        {snack}
+      </div>);
+  }
+
+  /* ================= SPORTART / ERFASSUNG ================= */
+  const sport=term.sports.find(s=>s.id===state.selSport);
+  if(state.screen==="sport"&&sport){
+    const upSport=(p)=>upTerm({sports:term.sports.map(s=>s.id===sport.id?{...s,...p}:s)});
+    const upPart=(pid,p)=>upSport({parts:sport.parts.map(x=>x.id===pid?{...x,...p}:x)});
+    const list=sortStudents(cls.students,state.sort,term);
+    const openOnly=!!state.onlyOpen;
+    const rows=openOnly?list.filter(st=>sport.parts.some(p=>noteOf(partEntry(st,sport.id,p.id).n)==null)):list;
+    const wSum=sport.parts.reduce((a,p)=>a+(Number(p.weight)||0),0);
+    const measureParts=sport.parts.filter(p=>p.type==="measure");
+    const pr=sportProgress(cls.students,sport);
+    const onMeasure=(st,part,raw)=>{
+      const tab=state.tables.find(t=>t.id===part.tableId);
+      const val=parseVal(raw,tab?tab.unit:part.unit);
+      const cur=partEntry(st,sport.id,part.id);
+      const patch={v:raw};
+      if(cur.auto!==false){
+        const n=gradeFromTable(tab,val,cls.jg,st.gender);
+        patch.n=n==null?"":String(n).replace(".",",");
+      }
+      setEntry(st.id,sport.id,part.id,patch);
+    };
+    return (
+      <div className="wrap" style={{paddingTop:14}}>
+        <button className="btn-quiet" style={{border:"none",paddingLeft:0}} onClick={()=>up({screen:"home",selSport:null})}><Ic n="back" size={14}/> {cls.name} · {term.label}</button>
+
+        {f.stopwatch&&f.measures&&measureParts.length>0&&
+          <Stopwatch parts={measureParts} students={list} anon={state.anon} tables={state.tables}
+            onAssign={(st,part,secs)=>{
+              const tab=state.tables.find(t=>t.id===part.tableId);
+              onMeasure(st,part,fmtVal(secs,tab?tab.unit:"s"));
+              say(dispName(st,state.anon)+": "+fmtVal(secs,tab?tab.unit:"s")+" übernommen");}}/>}
+
+        <div className="card">
+          <div className="row">
+            <input className="inp" style={{flex:"2 1 200px",fontWeight:700}} value={sport.name} onChange={e=>upSport({name:e.target.value})}/>
+            <label className="row" style={{gap:6}}><span className="lbl">Gewicht gesamt</span>
+              <input className="cell" style={{width:60}} inputMode="numeric" value={sport.weight}
+                onChange={e=>upSport({weight:e.target.value.replace(/\D/g,"")})}/></label>
+            {f.drop&&(
+              <label className="row" style={{gap:6}}><span className="lbl">Streichnoten</span>
+                <select className="cell" style={{width:70}} value={sport.drop||0} onChange={e=>upSport({drop:Number(e.target.value)})}>
+                  <option value={0}>keine</option><option value={1}>1</option><option value={2}>2</option></select></label>)}
+            {state.classes.length>1&&(
+              <select className="inp" style={{flex:"1 1 190px"}} value="" onChange={e=>{
+                const cid=e.target.value; if(!cid)return;
+                const copy={...sport,id:uid(),parts:sport.parts.map(p=>({...p,id:uid()}))};
+                up({classes:state.classes.map(c=>{
+                  if(c.id!==cid) return c;
+                  const at=c.terms.find(t=>t.id===c.activeTerm)||c.terms[0];
+                  return {...c,terms:c.terms.map(t=>t.id===at.id?{...t,sports:[...t.sports,copy]}:t)};})});
+                say("Sportart in die andere Klasse kopiert.");}}>
+                <option value="">In andere Klasse kopieren …</option>
+                {state.classes.filter(c=>c.id!==cls.id).map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>)}
+          </div>
+          {f.drop&&Number(sport.drop)>0&&
+            <div className="hint" style={{marginTop:8}}>Die {sport.drop===1?"schlechteste Teilnote":"zwei schlechtesten Teilnoten"} dieser Sportart {sport.drop===1?"wird":"werden"} nicht gewertet – sofern danach noch eine Note übrig bleibt.</div>}
+        </div>
+
+        <div className="card">
+          <h2 className="sec">Teilnoten & Gewichtung</h2>
+          {sport.parts.map(p=>{
+            const tab=state.tables.find(t=>t.id===p.tableId);
+            return (
+            <div key={p.id} style={{borderTop:"1px solid var(--line)",padding:"8px 0"}}>
+              <div className="row">
+                <input className="inp" style={{flex:"2 1 180px"}} value={p.name} onChange={e=>upPart(p.id,{name:e.target.value})}/>
+                <input className="cell" style={{width:56}} inputMode="numeric" value={p.weight}
+                  onChange={e=>upPart(p.id,{weight:e.target.value.replace(/\D/g,"")})}/><span className="hint">%</span>
+                {f.measures&&(
+                  <select className="inp" style={{flex:"1 1 160px"}} value={p.type} onChange={e=>upPart(p.id,{type:e.target.value})}>
+                    <option value="manual">Note direkt eintragen</option><option value="measure">Messung (Weite/Zeit)</option></select>)}
+                {f.measures&&p.type==="measure"&&(
+                  <select className="inp" style={{flex:"1 1 170px"}} value={p.tableId||""} onChange={e=>upPart(p.id,{tableId:e.target.value||null})}>
+                    <option value="">– Tabelle wählen –</option>
+                    {state.tables.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select>)}
+                <button className="xbtn" onClick={()=>upSport({parts:sport.parts.filter(x=>x.id!==p.id)})}>✕</button>
+              </div>
+              {f.measures&&p.type==="measure"&&!tab&&<div className="hint" style={{color:"var(--warn)"}}>Ohne Tabelle wird keine Note berechnet.</div>}
+            </div>);})}
+          <div className="row" style={{marginTop:10}}>
+            <button className="btn-ghost" onClick={()=>upSport({parts:[...sport.parts,mkPart("Neue Teilnote",10)]})}><Ic n="plus" size={14}/> Teilnote</button>
+            <span className="hint" style={{color:wSum===100?"var(--sub)":"var(--warn)"}}>Summe {wSum} % – die Gewichte wirken im Verhältnis, 100 % sind nicht nötig.</span>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="row" style={{justifyContent:"space-between"}}>
+            <h2 className="sec">Erfassung</h2>
+            <span className="pill">{pr.done} von {pr.total} Teilnoten</span>
+          </div>
+          <SortBar state={state} up={up}/>
+          <div className="row" style={{marginBottom:8}}>
+            <button className={"tab"+(openOnly?" on":"")} style={{padding:"4px 11px",fontSize:13}}
+              onClick={()=>up({onlyOpen:!openOnly})}>Nur offene anzeigen</button>
+            {openOnly&&<span className="hint">{rows.length} von {list.length} noch unvollständig</span>}
+          </div>
+          <GradeGrid rows={rows} sport={sport} f={f} tables={state.tables} anon={state.anon}
+            clsId={cls.id} applyCell={applyCell} toggleTodo={toggleTodo} openStudent={openStudent}/>
+          <div className="hint" style={{marginTop:8}}>
+            Gestrichelte Noten stammen aus der Bewertungstabelle. {f.todo&&"Mit dem Fähnchen markierst du eine Leistung als nachzuholen. "}
+            Enter oder Pfeil nach unten springt in die nächste Zeile, Umschalt+Enter nach oben. Gültig sind Noten von 1 bis 6, auch als 2+ oder 3−.
+          </div>
+        </div>
+
+        {f.spiegel&&<Notenspiegel values={list.map(st=>sportGrade(st,sport))} title={"Notenspiegel · "+sport.name}/>}
+        {rows.length===0&&openOnly&&<div className="card hint">Alle Teilnoten dieser Sportart sind erfasst.</div>}
+
+        <button className="btn-danger" style={{width:"100%"}} onClick={()=>remove("Sportart „"+sport.name+"“ gelöscht",()=>{
+          upTerm({sports:term.sports.filter(s=>s.id!==sport.id)}); up({screen:"home",selSport:null});})}>
+          <Ic n="trash" size={14}/> Sportart löschen</button>
+        {snack}
+      </div>);
+  }
+
+  /* ================= HOME ================= */
+  const list=sortStudents(cls.students,state.sort,term);
+  const pr=progress(cls.students,term);
+  const todoOpen=f.todo?allTodos(state).filter(i=>!i.done).length:0;
+  const backupDue=f.backupReminder&&(state.lastBackup==null||daysSince(state.lastBackup)>7)&&cls.students.length>0;
+  return (
+  <div className="wrap" style={{paddingTop:14}}>
+    <div className="row" style={{justifyContent:"space-between",marginBottom:10}}>
+      <Wordmark/>
+      <div className="row" style={{gap:4}}>
+        {f.measures&&<button className="tab" onClick={()=>up({screen:"tables",selTable:null})}><Ic n="ruler" size={14}/> Tabellen</button>}
+        {f.attendance&&<button className="tab" onClick={()=>up({screen:"attendance"})}><Ic n="calendar" size={14}/> Anwesenheit</button>}
+        {f.todo&&<button className="tab" onClick={()=>up({screen:"todo"})}><Ic n="flag" size={14}/> Nachholen{todoOpen?" ("+todoOpen+")":""}</button>}
+        <button className="tab" onClick={()=>up({screen:"about"})}><Ic n="info" size={14}/> Info</button>
+        <button className="tab" onClick={()=>up({screen:"settings"})}><Ic n="settings" size={14}/></button>
+      </div>
+    </div>
+
+    {backupDue&&(
+      <div className="card warnbox" style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+        <span><strong>Sicherung fällig.</strong> {state.lastBackup?"Letzte Sicherung vor "+daysSince(state.lastBackup)+" Tagen.":"Es gibt noch keine Sicherung dieser Daten."}</span>
+        <span className="row">
+          <button className="btn" onClick={()=>doExport(true)}><Ic n="lock" size={14}/> Jetzt sichern</button>
+          <button className="btn-quiet" onClick={()=>up({lastBackup:today()})}>Später</button>
+        </span>
+      </div>)}
+
+    <div className="tabbar">
+      {state.classes.map(c=>(
+        <button key={c.id} className={"tab"+(c.id===cls.id?" on":"")}
+          onClick={()=>up({selClass:c.id,selSport:null,selStudent:null})}>{c.name}</button>))}
+      <button className="tab" onClick={()=>{const n=prompt("Name der Klasse oder des Kurses:","8b"); if(!n)return;
+        const c=freshClass(n.trim()); up({classes:[...state.classes,c],selClass:c.id});}}><Ic n="plus" size={13}/> Klasse</button>
+    </div>
+
+    {f.terms&&(
+      <div className="tabbar">
+        {cls.terms.map(t=>(
+          <button key={t.id} className={"tab"+(t.id===term.id?" on":"")}
+            onClick={()=>upCls({activeTerm:t.id})}>{t.label}</button>))}
+        <button className="tab" onClick={()=>{
+          const label=prompt("Bezeichnung des Zeitraums:","2. Halbjahr"); if(!label)return;
+          const t=mkTerm(label.trim());
+          upCls({terms:[...cls.terms,t],activeTerm:t.id});
+          say("Zeitraum angelegt – Namen bleiben, Noten beginnen leer.");}}><Ic n="plus" size={13}/> Halbjahr</button>
+        {f.compare&&cls.terms.length>1&&
+          <button className="tab" onClick={()=>up({screen:"compare"})}><Ic n="swap" size={13}/> Vergleich</button>}
+      </div>)}
+
+    <div className="card" style={{background:"linear-gradient(135deg,var(--hero1),var(--hero2))",color:"#fff"}}>
+      <div className="row" style={{justifyContent:"space-between",alignItems:"flex-start"}}>
+        <div>
+          <div className="brand" style={{fontSize:20,color:"#fff"}}>{cls.name}<span style={{fontSize:14,color:"var(--hero-ink)",fontWeight:400}}> · {term.label}</span></div>
+          <div style={{fontSize:13,color:"var(--hero-ink)"}}>{cls.students.length} Schülerinnen und Schüler · {term.sports.length} Sportarten{f.attendance?" · "+(term.lessons||[]).length+" Stunden":""}</div>
+        </div>
+        <div style={{textAlign:"center"}}>
+          <div className="brand" style={{fontSize:30,color:"#fff"}}>{fmtNote(mean(cls.students.map(s=>totalGrade(s,term))),1)}</div>
+          <div style={{fontSize:11,color:"var(--hero-ink)",fontWeight:700}}>Klassenschnitt</div>
+        </div>
+      </div>
+      {pr.total>0&&(
+        <div style={{marginTop:10}}>
+          <div className="row" style={{justifyContent:"space-between",fontSize:11,color:"var(--hero-ink)",fontWeight:700}}>
+            <span>Erfasste Teilnoten</span><span>{pr.done} von {pr.total}</span></div>
+          <div className="bar" style={{marginTop:4,background:"rgba(255,255,255,.18)"}}>
+            <div style={{width:(pr.pct*100)+"%",background:"var(--yellow)"}}></div></div>
+        </div>)}
+      <div className="row" style={{marginTop:10,gap:6}}>
+        <span style={{fontSize:12,color:"var(--hero-ink)",fontWeight:700}}>Jahrgang</span>
+        <input className="cell" style={{width:50,padding:"3px 2px"}} value={cls.jg} onChange={e=>upCls({jg:e.target.value.replace(/\D/g,"")})}/>
+        <span style={{fontSize:11,color:"var(--hero-ink)"}}>bestimmt, welche Zeile der Bewertungstabellen gilt</span>
+      </div>
+    </div>
+
+    <div className="card">
+      <h2 className="sec"><Ic n="whistle" size={14}/> Sportarten</h2>
+      {term.sports.map(s=>{
+        const sp=sportProgress(cls.students,s);
+        return (
+        <div key={s.id} className="row" style={{justifyContent:"space-between",borderTop:"1px solid var(--line)",padding:"9px 0"}}>
+          <button onClick={()=>up({screen:"sport",selSport:s.id})} style={{background:"none",border:"none",padding:0,cursor:"pointer",textAlign:"left",flex:"1 1 170px"}}>
+            <strong style={{fontSize:16,color:"var(--ink)"}}>{s.name}</strong>
+            <div className="hint">{s.parts.length} Teilnoten · Gewicht {s.weight}{f.drop&&Number(s.drop)>0?" · Streichnote "+s.drop:""}</div>
+            {sp.total>0&&<div className="bar" style={{marginTop:5,maxWidth:180}}><div style={{width:(sp.pct*100)+"%"}}></div></div>}
+          </button>
+          <NoteChip n={mean(cls.students.map(st=>sportGrade(st,s)))} chips={f.chips}/>
+          <span className="pill">öffnen ›</span>
+        </div>);})}
+      <SportAdder onAdd={(sp)=>upTerm({sports:[...term.sports,sp]})} tables={state.tables} measures={f.measures}/>
+    </div>
+
+    <div className="card">
+      <h2 className="sec"><Ic n="users" size={14}/> Schülerinnen und Schüler</h2>
+      <SortBar state={state} up={up}/>
+      {state.editStudent&&(()=>{
+        const es=cls.students.find(x=>x.id===state.editStudent);
+        if(!es) return null;
+        return (
+        <div className="card" style={{background:"var(--accent-soft)",boxShadow:"none",marginBottom:10}}>
+          <h2 className="sec"><Ic n="pencil" size={14}/> Name bearbeiten</h2>
+          <div className="row">
+            <input className="inp" style={{flex:"1 1 140px"}} placeholder="Nachname" value={es.last}
+              onChange={e=>upStudent(es.id,{last:e.target.value})}/>
+            <input className="inp" style={{flex:"1 1 140px"}} placeholder="Vorname" value={es.first}
+              onChange={e=>upStudent(es.id,{first:e.target.value})}/>
+            <select className="inp" style={{width:90}} value={es.gender} onChange={e=>upStudent(es.id,{gender:e.target.value})}>
+              <option value="m">m</option><option value="w">w</option><option value="x">–</option></select>
+            <button className="btn" onClick={()=>up({editStudent:null})}>Fertig</button>
+            <button className="btn-danger" onClick={()=>{
+              const name=dispName(es,state.anon);
+              up({editStudent:null});
+              remove(name+" aus der Liste entfernt",()=>upCls({students:cls.students.filter(x=>x.id!==es.id)}));}}>
+              <Ic n="trash" size={14}/> Aus der Liste entfernen</button>
+          </div>
+          <div className="hint" style={{marginTop:8}}>
+            Änderungen wirken sofort in allen Halbjahren. Entfernte Personen holst du sieben Sekunden lang unten über „Rückgängig“ zurück – danach sind auch ihre Noten weg.
+          </div>
+        </div>);})()}
+      {list.length===0&&<div className="hint" style={{padding:"8px 0"}}>Noch keine Namen. Trage sie einzeln ein oder importiere die Klassenliste.</div>}
+      <div className="scroll"><table className="grid">
+        <thead><tr><th className="l stick">Name</th><th>G.</th>
+          {term.sports.map(s=><th key={s.id}>{s.name}</th>)}
+          <th>Gesamt</th><th>unents.</th>{f.notes&&<th>Notiz</th>}</tr></thead>
+        <tbody>{list.map(st=>(
+          <HomeRow key={st.id} st={st} term={term} f={f} anon={state.anon} clsId={cls.id}
+            openStudent={openStudent} setGender={setGender} onEdit={editStudent}/>))}</tbody>
+      </table></div>
+      <StudentAdder existing={cls.students} onAdd={(s)=>upCls({students:[...cls.students,s]})}
+        onBulk={(a)=>{upCls({students:[...cls.students,...a]}); say(a.length+" Namen übernommen.");}}/>
+    </div>
+
+    {f.spiegel&&<Notenspiegel values={cls.students.map(st=>totalGrade(st,term))} title="Notenspiegel · Gesamtnoten"/>}
+
+    <div className="card">
+      <h2 className="sec">Klasse & Zeitraum</h2>
+      <div className="row" style={{marginBottom:10}}>
+        <label className="lbl">Klasse</label>
+        <input className="inp" style={{flex:"1 1 140px"}} value={cls.name} onChange={e=>upCls({name:e.target.value})}/>
+        <label className="lbl">Zeitraum</label>
+        <input className="inp" style={{flex:"1 1 140px"}} value={term.label} onChange={e=>upTerm({label:e.target.value})}/>
+      </div>
+      <div className="row">
+        <button className="btn-quiet" onClick={()=>window.print()}><Ic n="printer" size={14}/> Notenliste drucken</button>
+        <button className="btn-quiet" onClick={exportCsv}>CSV</button>
+        {f.teams&&<button className="btn-quiet" onClick={()=>{
+          const n=+(prompt("In wie viele Gruppen teilen?","4")||0); if(!n||n<2)return;
+          const sh=[...cls.students].sort(()=>Math.random()-0.5), out=Array.from({length:n},()=>[]);
+          sh.forEach((s,i)=>out[i%n].push(dispName(s,state.anon)));
+          alert(out.map((g,i)=>"Gruppe "+(i+1)+":\n"+g.join("\n")).join("\n\n"));}}>
+          <Ic n="shuffle" size={14}/> Gruppen losen</button>}
+        <button className="btn-quiet" onClick={()=>remove("Noten des Zeitraums geleert",()=>{
+          upTerm({lessons:[]});
+          upCls({students:cls.students.map(x=>{const g={...(x.g||{})};
+            term.sports.forEach(sp=>delete g[sp.id]);
+            return {...x,g,t:{...(x.t||{}),[term.id]:{final:"",comment:"",absU:0,absE:0,forgot:0}}};})});})}>
+          Noten dieses Zeitraums leeren</button>
+        {cls.terms.length>1&&<button className="btn-danger" onClick={()=>remove("Zeitraum „"+term.label+"“ gelöscht",()=>{
+          const rest=cls.terms.filter(t=>t.id!==term.id);
+          upCls({terms:rest,activeTerm:rest[0].id});})}>
+          <Ic n="trash" size={14}/> Zeitraum löschen</button>}
+        <button className="btn-danger" onClick={()=>{
+          if(!confirm("Klasse "+cls.name+" mit allen Halbjahren und Noten löschen?"))return;
+          const rest=state.classes.filter(c=>c.id!==cls.id);
+          if(rest.length) up({classes:rest,selClass:rest[0].id,selSport:null,selStudent:null});
+          else {const n=freshClass("Neue Klasse"); up({classes:[n],selClass:n.id,selSport:null,selStudent:null});}
+          say("Klasse gelöscht.");}}>
+          <Ic n="trash" size={14}/> Klasse löschen</button>
+      </div>
+    </div>
+
+    <div style={{textAlign:"center"}}><span className="hint">{APP_NAME} – {APP_SUB} · v{APP_VER} · alle Daten bleiben auf diesem Gerät</span></div>
+    {snack}
+  </div>);
+}
+
+
+/* ---------- Eingabezelle: puffert lokal, schreibt beim Verlassen ---------- */
+const CellInput = React.memo(function CellInput({value,onCommit,width,color,dashed,bad,placeholder,onNav,rc,reg}){
+  const [v,setV]=useState(value==null?"":value);
+  const timer=useRef(null);
+  const dirty=useRef(false);
+  useEffect(()=>{ if(!dirty.current) setV(value==null?"":value); },[value]);
+  const commit=(nv)=>{ dirty.current=false; if((nv||"")!==(value||"")) onCommit(nv); };
+  const change=(e)=>{
+    const nv=e.target.value.replace(/[^0-9.,:+\-−\s]/g,"");
+    dirty.current=true; setV(nv);
+    clearTimeout(timer.current);
+    timer.current=setTimeout(()=>commit(nv),700);   /* Sicherheitsnetz, falls niemand das Feld verlässt */
+  };
+  return (
+    <input className={"cell"+(bad?" bad":"")} inputMode="decimal" value={v} placeholder={placeholder}
+      ref={reg} aria-invalid={bad?"true":"false"}
+      style={{width,color:bad?undefined:color,borderStyle:dashed?"dashed":"solid"}}
+      onChange={change}
+      onFocus={e=>e.target.select()}
+      onBlur={()=>{ clearTimeout(timer.current); commit(v); }}
+      onKeyDown={e=>{ if(onNav) onNav(e,rc,()=>{ clearTimeout(timer.current); commit(v); }); }}/>
+  );
+});
+
+/* ---------- Eine Zeile der Erfassung ---------- */
+const GradeRow = React.memo(function GradeRow({st,sport,f,tables,anon,clsId,applyCell,toggleTodo,openStudent,r,reg,onNav}){
+  const g=sportGrade(st,sport);
+  let c=-1;
+  return (
+    <tr>
+      <td className="l stick">
+        <button onClick={()=>openStudent(st.id)}
+          style={{background:"none",border:"none",padding:0,cursor:"pointer",fontWeight:600,fontSize:14,color:"var(--ink)"}}>
+          {dispName(st,anon)} <span style={{color:"var(--faint)"}}>{st.gender}</span></button>
+      </td>
+      {sport.parts.map(p=>{
+        const e=partEntry(st,sport.id,p.id);
+        const tab=tables.find(t=>t.id===p.tableId);
+        const measure=f.measures&&p.type==="measure";
+        const cM=measure?++c:null, cN=++c;
+        return (<React.Fragment key={p.id}>
+          {measure&&(
+            <td><CellInput value={e.v||""} width={78} rc={{r,c:cM}} reg={reg(r+"_"+cM)} onNav={onNav}
+              placeholder={tab?(tab.unit==="min"?"m:ss":tab.unit):"Wert"}
+              onCommit={val=>applyCell(clsId,st.id,sport.id,p.id,"measure",val)}/></td>)}
+          <td><CellInput value={e.n||""} width={62} rc={{r,c:cN}} reg={reg(r+"_"+cN)} onNav={onNav}
+            placeholder="–" color={noteColor(noteOf(e.n))} bad={noteBad(e.n)}
+            dashed={p.type==="measure"&&e.auto!==false}
+            onCommit={val=>applyCell(clsId,st.id,sport.id,p.id,"note",val)}/></td>
+          {f.todo&&(
+            <td><button className="todoflag" title={e.todo?"Nachholen aufheben":"Als nachzuholen markieren"}
+              style={{color:e.todo?"var(--warn)":"var(--border)"}}
+              onClick={()=>{
+                if(e.todo) toggleTodo(clsId,st.id,sport.id,p.id,false,"");
+                else { const dt=prompt("Termin zum Nachholen (JJJJ-MM-TT, optional):",today())||"";
+                  toggleTodo(clsId,st.id,sport.id,p.id,true,dt); }}}>⚑</button></td>)}
+        </React.Fragment>);})}
+      <td><NoteChip n={g} chips={f.chips}/></td>
+    </tr>);
+});
+
+/* ---------- Erfassungsraster mit Tastaturnavigation ---------- */
+function GradeGrid({rows,sport,f,tables,anon,clsId,applyCell,toggleTodo,openStudent}){
+  const refs=useRef({});
+  const reg=(key)=>(el)=>{ if(el) refs.current[key]=el; else delete refs.current[key]; };
+  const onNav=(e,rc,flush)=>{
+    let dr=0;
+    if(e.key==="Enter") dr=e.shiftKey?-1:1;
+    else if(e.key==="ArrowDown") dr=1;
+    else if(e.key==="ArrowUp") dr=-1;
+    else return;
+    e.preventDefault(); flush();
+    const target=refs.current[(rc.r+dr)+"_"+rc.c];
+    if(target){ target.focus(); if(target.select) target.select(); }
+  };
+  const bad=rows.some(st=>sport.parts.some(p=>noteBad(partEntry(st,sport.id,p.id).n)));
+  return (
+    <div>
+      <div className="scroll"><table className="grid">
+        <thead><tr><th className="l stick">Name</th>
+          {sport.parts.map(p=>(
+            <th key={p.id} colSpan={(f.measures&&p.type==="measure"?1:0)+(f.todo?1:0)+1}>
+              {p.name}<br/><span style={{fontWeight:400}}>{p.weight} %</span></th>))}
+          <th>Ø</th></tr></thead>
+        <tbody>{rows.map((st,r)=>(
+          <GradeRow key={st.id} st={st} sport={sport} f={f} tables={tables} anon={anon} clsId={clsId}
+            applyCell={applyCell} toggleTodo={toggleTodo} openStudent={openStudent}
+            r={r} reg={reg} onNav={onNav}/>))}</tbody>
+      </table></div>
+      {bad&&<div className="hint" style={{color:"var(--red)",fontWeight:700,marginTop:6}}>
+        Rot umrandete Felder liegen außerhalb von 1 bis 6 und werden nicht mitgerechnet.</div>}
+    </div>);
+}
+
+/* ---------- Zeile der Klassenübersicht ---------- */
+const HomeRow = React.memo(function HomeRow({st,term,f,anon,clsId,openStudent,setGender,onEdit}){
+  const d=tof(st,term.id), tot=totalGrade(st,term), u=Number(d.absU||0)+attCount(term,st.id,"u");
+  return (
+    <tr>
+      <td className="l stick">
+        <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
+          <button onClick={()=>openStudent(st.id)}
+            style={{background:"none",border:"none",padding:0,cursor:"pointer",fontWeight:600,fontSize:14,color:"var(--ink)"}}>
+            {dispName(st,anon)}</button>
+          <button onClick={()=>onEdit(st.id)} title="Namen ändern oder Person entfernen"
+            style={{background:"none",border:"none",cursor:"pointer",color:"var(--faint)",padding:"6px 4px",lineHeight:1}}>
+            <Ic n="pencil" size={14}/></button>
+        </span></td>
+      <td><select className="cell" style={{width:60}} value={st.gender} onChange={e=>setGender(clsId,st.id,e.target.value)}>
+        <option value="m">m</option><option value="w">w</option><option value="x">–</option></select></td>
+      {term.sports.map(s=><td key={s.id}><NoteChip n={sportGrade(st,s)} chips={f.chips}/></td>)}
+      <td><NoteChip n={tot} chips={f.chips} star={noteOf(d.final)!=null}/>
+        {f.points&&tot!=null?<span className="hint"> {toPoints(tot)} P</span>:null}</td>
+      <td style={{color:u>0?"var(--red)":"var(--faint)"}}>{u||"–"}</td>
+      {f.notes&&<td>{st.notes?<Ic n="note" size={14} color="var(--accent)"/>:""}</td>}
+    </tr>);
+});
+
+/* ---------- Wortmarke: Signet aus drei steigenden Balken, dieselbe Bildsprache wie die Notenchips ---------- */
+function Wordmark({size="sm",light=false,sub=APP_SUB}){
+  const big=size==="lg";
+  const box=big?46:36;
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:big?13:10}}>
+      <span aria-hidden="true" style={{width:box,height:box,borderRadius:box*0.29,flexShrink:0,
+        display:"flex",alignItems:"center",justifyContent:"center",
+        background:light?"rgba(255,255,255,.16)":"linear-gradient(145deg,var(--accent),var(--hero2))",
+        boxShadow:light?"none":"0 2px 7px rgba(14,124,90,.30)",
+        border:light?"1px solid rgba(255,255,255,.25)":"none"}}>
+        <svg width={box*0.64} height={box*0.64} viewBox="0 0 24 24">
+          <g fill="#fff">
+            <rect x="10.25" y="1.4" width="3.5" height="3.3" rx="1"/>
+            <rect x="10.9" y="4" width="2.2" height="2.4"/>
+            <circle cx="6.34" cy="7.94" r="1.45"/>
+            <circle cx="17.66" cy="7.94" r="1.45"/>
+            <path d="M14.56 8.58 L14.56 18.7 L12.25 18.7 L12.25 11.11 L10.16 12.21 L9.28 10.34 L12.58 8.58 Z"/>
+          </g>
+          <circle cx="12" cy="13.6" r="8" fill="none" stroke="#fff" strokeWidth="2.7"/>
+        </svg>
+      </span>
+      <span style={{lineHeight:1.08}}>
+        <div className="brand" style={{fontSize:big?27:21,letterSpacing:"-0.015em",
+          color:light?"#fff":"var(--ink)"}}>{APP_NAME}</div>
+        <div style={{fontSize:big?11:10,fontWeight:700,letterSpacing:".17em",textTransform:"uppercase",
+          color:light?"var(--hero-ink)":"var(--faint)",marginTop:2}}>{sub}</div>
+      </span>
+    </div>);
+}
+
+/* ---------- Note als Chip mit Balken (zweites Merkmal neben der Farbe) ---------- */
+function NoteChip({n,chips=true,star}){
+  if(n==null||isNaN(n)) return <span style={{color:"var(--faint)",fontWeight:700}}>–</span>;
+  const c=noteColor(n);
+  if(!chips) return <strong style={{color:c}}>{fmtNote(n,1)}{star?"*":""}</strong>;
+  const filled=Math.max(1,Math.min(6,Math.round(7-n)));
+  return (
+    <span className="nchip" style={{borderColor:c,color:c}} title={"Note "+fmtNote(n,1)}>
+      {fmtNote(n,1)}{star?"*":""}
+      <span className="segs">{[1,2,3,4,5,6].map(i=>(
+        <i key={i} style={{height:3+i*1.4,background:i<=filled?c:"var(--border)"}}/>))}</span>
+    </span>);
+}
+
+/* ---------- Sperrbildschirm ---------- */
+function LockScreen({hash,onOk}){
+  const [pin,setPin]=useState(""), [err,setErr]=useState("");
+  const check=async()=>{const h=await sha256(pin); if(h===hash) onOk(); else {setErr("PIN stimmt nicht."); setPin("");}};
+  return (
+    <div className="lock">
+      <div className="card" style={{width:290,textAlign:"center"}}>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:14}}><Wordmark/></div>
+        <Ic n="lock" size={22} color="var(--faint)" style={{marginBottom:8}}/>
+        <input className="inp" type="password" inputMode="numeric" placeholder="PIN" value={pin} autoFocus
+          onChange={e=>{setPin(e.target.value); setErr("");}} onKeyDown={e=>e.key==="Enter"&&check()}/>
+        {err&&<div style={{color:"var(--red)",fontSize:13,marginTop:6,fontWeight:700}}>{err}</div>}
+        <button className="btn" style={{width:"100%",marginTop:10}} onClick={check}>Entsperren</button>
+      </div>
+    </div>);
+}
+
+/* ---------- Stoppuhr ---------- */
+function Stopwatch({parts,students,anon,tables,onAssign}){
+  const [open,setOpen]=useState(false), [run,setRun]=useState(false), [ms,setMs]=useState(0);
+  const [partId,setPartId]=useState(parts[0]?parts[0].id:"");
+  const [done,setDone]=useState({});
+  const t0=useRef(0), raf=useRef(null);
+  useEffect(()=>{
+    if(!run) return;
+    t0.current=Date.now()-ms;
+    const tick=()=>{setMs(Date.now()-t0.current); raf.current=setTimeout(tick,71);};
+    tick();
+    return ()=>clearTimeout(raf.current);
+  },[run]);
+  const part=parts.find(p=>p.id===partId)||parts[0];
+  const secs=ms/1000;
+  const show=()=>{const m=Math.floor(secs/60), s=secs-m*60; return m+":"+(s<10?"0":"")+s.toFixed(2).replace(".",",");};
+  if(!open) return <button className="btn-quiet" style={{marginBottom:12}} onClick={()=>setOpen(true)}><Ic n="clock" size={14}/> Stoppuhr öffnen</button>;
+  return (
+    <div className="watchbar">
+      <div className="row" style={{justifyContent:"space-between"}}>
+        <div className="brand" style={{fontSize:30,color:"#fff",minWidth:130}}>{show()}</div>
+        <div className="row">
+          <button className="btn" onClick={()=>setRun(!run)}>{run?"Stopp":"Start"}</button>
+          <button className="btn-quiet" onClick={()=>{setRun(false); setMs(0); setDone({});}}>Zurücksetzen</button>
+          <button className="btn-quiet" onClick={()=>setOpen(false)}>Schließen</button>
+        </div>
+      </div>
+      <div className="row" style={{marginTop:8}}>
+        <span style={{fontSize:12,color:"var(--hero-ink)",fontWeight:700}}>Disziplin</span>
+        <select className="inp" style={{flex:"1 1 180px",padding:"6px 8px"}} value={partId} onChange={e=>setPartId(e.target.value)}>
+          {parts.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select>
+      </div>
+      <div className="row" style={{marginTop:8,gap:5}}>
+        {students.map(st=>(
+          <button key={st.id} className="tab" style={{opacity:done[st.id]?0.45:1,padding:"5px 10px",fontSize:13}}
+            onClick={()=>{if(!part)return; onAssign(st,part,secs); setDone(d=>({...d,[st.id]:true}));}}>
+            {dispName(st,anon)}</button>))}
+      </div>
+      <div style={{fontSize:12,color:"var(--hero-ink)",marginTop:6}}>
+        Bei Zieleinlauf auf den Namen tippen – die Zeit wird eingetragen und benotet, die Uhr läuft weiter.
+      </div>
+    </div>);
+}
+
+/* ---------- Kleinteile ---------- */
+function SortBar({state,up}){
+  return (
+    <div className="row" style={{marginBottom:8}}>
+      <span className="lbl">Sortierung</span>
+      {[["alpha","Alphabetisch"],["gender","Nach Geschlecht"],["note","Nach Note"]].map(([k,l])=>(
+        <button key={k} className={"tab"+(state.sort===k?" on":"")} style={{padding:"4px 11px",fontSize:13}}
+          onClick={()=>up({sort:k})}>{l}</button>))}
+    </div>);
+}
+
+function StudentAdder({onAdd,onBulk,existing}){
+  const [last,setLast]=useState(""), [first,setFirst]=useState(""), [g,setG]=useState("m");
+  const [bulk,setBulk]=useState(""), [open,setOpen]=useState(false), [prev,setPrev]=useState(null);
+  const fileRef=useRef(null);
+  const add=()=>{if(!last.trim()&&!first.trim())return; onAdd(mkStudent(last.trim(),first.trim(),g)); setLast(""); setFirst("");};
+  const preview=(text)=>{
+    const arr=parseNameList(text);
+    const known=new Set((existing||[]).map(x=>(x.last+"|"+x.first).toLowerCase()));
+    setPrev({all:arr,neu:arr.filter(x=>!known.has((x.last+"|"+x.first).toLowerCase()))});
+  };
+  const commit=()=>{if(prev&&prev.neu.length) onBulk(prev.neu); setPrev(null); setBulk(""); setOpen(false);};
+  return (
+    <div style={{marginTop:12,borderTop:"1px solid var(--line)",paddingTop:12}}>
+      <div className="row">
+        <input className="inp" style={{flex:"1 1 130px"}} placeholder="Nachname" value={last}
+          onChange={e=>setLast(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()}/>
+        <input className="inp" style={{flex:"1 1 130px"}} placeholder="Vorname" value={first}
+          onChange={e=>setFirst(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()}/>
+        <select className="inp" style={{width:80}} value={g} onChange={e=>setG(e.target.value)}>
+          <option value="m">m</option><option value="w">w</option><option value="x">–</option></select>
+        <button className="btn" onClick={add}><Ic n="plus" size={14}/> Eintragen</button>
+      </div>
+      <button className="btn-quiet" style={{border:"none",paddingLeft:0,marginTop:6}} onClick={()=>{setOpen(!open); setPrev(null);}}>
+        {open?"▾":"▸"} Klassenliste importieren</button>
+      {open&&(<div>
+        <div className="hint" style={{marginTop:4}}>
+          Aus einer Datei (CSV, TXT, Tabellen-Export der Schulverwaltung) oder als eingefügter Text.
+          Erkannt werden Überschriften wie <code>Nachname; Vorname; Geschlecht</code> und Zeilen wie <code>Meier, Lina (w)</code>.
+        </div>
+        <div className="row" style={{margin:"8px 0"}}>
+          <button className="btn-ghost" onClick={()=>fileRef.current.click()}><Ic n="upload" size={14}/> Datei wählen</button>
+          <input ref={fileRef} type="file" accept=".csv,.txt,.tsv" style={{display:"none"}}
+            onChange={e=>{const file=e.target.files[0];
+              if(file){const r=new FileReader(); r.onload=()=>preview(String(r.result)); r.readAsText(file,"utf-8");}
+              e.target.value="";}}/>
+          <span className="hint">Excel: „Speichern unter → CSV“</span>
+        </div>
+        <textarea className="ta" value={bulk} onChange={e=>{setBulk(e.target.value); setPrev(null);}}
+          placeholder={"Nachname;Vorname;Geschlecht\nMeier;Lina;w\nKrause;Ben;m"}/>
+        <div className="row" style={{marginTop:6}}>
+          <button className="btn-quiet" onClick={()=>preview(bulk)}>Vorschau prüfen</button>
+          {prev&&prev.neu.length>0&&<button className="btn" onClick={commit}>{prev.neu.length} Personen übernehmen</button>}
+        </div>
+        {prev&&(
+          <div className="card" style={{marginTop:10,background:"var(--chip)",boxShadow:"none"}}>
+            <div className="lbl" style={{marginBottom:6}}>Vorschau</div>
+            {prev.all.length===0
+              ? <div className="hint">Keine Namen erkannt. Prüfe Trennzeichen und Überschriften.</div>
+              : (<div>
+                  <div className="hint" style={{marginBottom:6}}>
+                    {prev.all.length} Zeilen gelesen · {prev.neu.length} neu · {prev.all.length-prev.neu.length} bereits vorhanden (werden übersprungen)</div>
+                  <div style={{maxHeight:150,overflowY:"auto"}}>
+                    {prev.all.slice(0,40).map((x,i)=>(
+                      <div key={i} className="row" style={{justifyContent:"space-between",padding:"2px 0",fontSize:14}}>
+                        <span>{x.last}, {x.first}</span><span className="pill">{x.gender}</span></div>))}
+                    {prev.all.length>40&&<div className="hint">… und {prev.all.length-40} weitere</div>}
+                  </div>
+                </div>)}
+          </div>)}
+      </div>)}
+    </div>);
+}
+
+function SportAdder({onAdd,tables,measures}){
+  const [open,setOpen]=useState(false);
+  const build=(preset)=>{
+    const parts=[];
+    (preset.parts||[]).forEach(([n,w])=>parts.push(mkPart(n,w)));
+    if(measures)(preset.measures||[]).forEach(([n,unit])=>{
+      const tab=tables.find(t=>t.name.toLowerCase().startsWith(n.toLowerCase().slice(0,6)));
+      parts.push(mkPart(n,Math.round(75/(preset.measures.length||1)),"measure",tab?tab.id:null,unit));
+    });
+    (preset.extra||[]).forEach(([n,w])=>parts.push(mkPart(n,w)));
+    if(!parts.length) parts.push(mkPart("Mitarbeit",100));
+    onAdd(mkSport(preset.name,parts)); setOpen(false);
+  };
+  return (
+    <div style={{marginTop:12,borderTop:"1px solid var(--line)",paddingTop:12}}>
+      <div className="row">
+        <button className="btn" onClick={()=>setOpen(!open)}><Ic n="plus" size={14}/> Sportart aus Vorlage</button>
+        <button className="btn-quiet" onClick={()=>onAdd(mkSport("Neue Sportart",[mkPart("Mitarbeit",100)]))}>Leere Sportart</button>
+      </div>
+      {open&&<div className="row" style={{marginTop:10,gap:6}}>
+        {SPORT_PRESETS.map(p=><button key={p.name} className="tab" onClick={()=>build(p)}>{p.name}</button>)}
+      </div>}
+    </div>);
+}
+
+function CommentSettings({state,up}){
+  const [v,setV]=useState("");
+  return (
+    <div className="card">
+      <h2 className="sec"><Ic n="quote" size={14}/> Bemerkungs-Bausteine</h2>
+      <div className="hint" style={{marginBottom:8}}>„{"{N}"}“ wird durch den Vornamen ersetzt.</div>
+      {state.comments.map((c,i)=>(
+        <div key={i} className="row" style={{borderTop:"1px solid var(--line)",padding:"6px 0"}}>
+          <input className="inp" style={{flex:1,fontSize:14}} value={c}
+            onChange={e=>up({comments:state.comments.map((x,j)=>j===i?e.target.value:x)})}/>
+          <button className="xbtn" onClick={()=>up({comments:state.comments.filter((_,j)=>j!==i)})}>✕</button>
+        </div>))}
+      <div className="row" style={{marginTop:10}}>
+        <input className="inp" style={{flex:1}} placeholder="Neuer Baustein mit {N}" value={v}
+          onChange={e=>setV(e.target.value)}
+          onKeyDown={e=>{if(e.key==="Enter"&&v.trim()){up({comments:[...state.comments,v.trim()]}); setV("");}}}/>
+        <button className="btn" onClick={()=>{if(v.trim()){up({comments:[...state.comments,v.trim()]}); setV("");}}}>Hinzufügen</button>
+      </div>
+    </div>);
+}
+
+function Notenspiegel({values,title}){
+  const v=values.filter(x=>x!=null).map(x=>Math.min(6,Math.max(1,Math.round(x))));
+  if(!v.length) return null;
+  const counts=GRADE_STEPS.map(g=>v.filter(x=>x===g).length), max=Math.max(...counts,1);
+  return (
+    <div className="card">
+      <h2 className="sec"><Ic n="chart" size={14}/> {title}</h2>
+      <div className="row" style={{alignItems:"flex-end",gap:10,height:110,flexWrap:"nowrap"}}>
+        {counts.map((c,i)=>(
+          <div key={i} style={{flex:1,textAlign:"center"}}>
+            <div style={{fontSize:12,fontWeight:700,color:"var(--sub)"}}>{c||""}</div>
+            <div style={{height:(c/max)*76+4,background:noteColor(i+1),borderRadius:"6px 6px 0 0"}}></div>
+            <div style={{fontSize:12,fontWeight:700,marginTop:4}}>{i+1}</div>
+          </div>))}
+      </div>
+      <div className="hint" style={{marginTop:6}}>Ø {fmtNote(mean(values),2)} · {v.length} Noten</div>
+    </div>);
+}
+
+function PasteBox({onPaste}){
+  const [v,setV]=useState("");
+  return (<div style={{marginTop:8}}>
+    <textarea className="ta" value={v} onChange={e=>setV(e.target.value)} placeholder={"7;m;42;36;30;24;18;12\n7;w;30;25;20;16;12;8"}/>
+    <button className="btn" onClick={()=>{onPaste(v); setV("");}}>Text übernehmen</button>
+  </div>);
+}
+
+/* ---------- Infoseite ---------- */
+const FEATURE_DOCS=[
+  ["users","Klassen, Halbjahre und Namen","Lege beliebig viele Klassen oder Kurse an, jede mit eigenen Zeiträumen – etwa 1. und 2. Halbjahr. Die Namensliste gilt für alle Zeiträume einer Klasse, die Noten werden getrennt geführt. Namen trägst du einzeln ein, fügst sie als Text ein oder importierst eine Datei: CSV, TXT oder der Tabellen-Export der Schulverwaltung. Überschriften wie „Nachname; Vorname; Geschlecht“ werden erkannt, und eine Vorschau zeigt vor der Übernahme, was gelesen wurde und wer bereits in der Liste steht."],
+  ["whistle","Sportarten und Teilnoten","Für Basketball, Volleyball, Turnen, Leichtathletik, Schwimmen und weitere gibt es Vorlagen mit fertigen Teilbereichen; eigene legst du in Sekunden an. Jede Teilnote – Technik, Spielfähigkeit, Mitarbeit – bekommt eine Gewichtung in Prozent, jede Sportart ein Gewicht in der Gesamtnote. Die Gewichte wirken im Verhältnis zueinander und müssen sich nicht auf 100 addieren. Eine fertige Sportart lässt sich mit einem Klick in eine andere Klasse übernehmen."],
+  ["ruler","Weiten, Zeiten und Bewertungstabellen","Für messbare Disziplinen trägst du den Wert ein – Meter, Sekunden oder mm:ss – und die App holt die Note aus einer Bewertungstabelle, getrennt nach Jahrgang und Geschlecht. Tabellen für Schlagwurf, Sprint, Weitsprung, 800 m und 50 m Freistil sind als Beispiel enthalten und vollständig editierbar. Eigene Tabellen legst du an oder lädst sie als CSV hoch; auf Wunsch rechnet die App Zwischennoten wie 2,3 aus. Jede automatisch gesetzte Note lässt sich von Hand überschreiben."],
+  ["clock","Stoppuhr mit Direktübernahme","Beim Ausdauerlauf öffnest du die Stoppuhr, wählst die Disziplin und startest einmal. Bei jedem Zieleinlauf tippst du auf den Namen: Die laufende Zeit wird eingetragen und sofort benotet, während die Uhr für die Nachfolgenden weiterläuft."],
+  ["calendar","Anwesenheit je Stunde","Lege eine Stunde mit Datum und Thema an und markiere je Person anwesend, entschuldigt, unentschuldigt, Sportzeug vergessen oder verspätet. Die Summen laufen automatisch ins Profil, in die Notenliste, in den Ausdruck und in den CSV-Export."],
+  ["flag","Nachholliste","Fehlt eine Leistung, markierst du sie in der Erfassung mit dem Fähnchen und hinterlegst optional einen Termin. Die Nachholliste sammelt alle Markierungen über sämtliche Klassen und Halbjahre hinweg – am Halbjahresende siehst du auf einer Seite, was noch aussteht."],
+  ["chart","Noten, Endnote und Auswertung","Aus den Teilnoten entsteht die Note je Sportart, daraus die rechnerische Gesamtnote. Sie ist ein Vorschlag: Im Profil setzt du die Endnote pädagogisch fest, sie wird mit einem Sternchen gekennzeichnet. Auf Wunsch lässt sich je Sportart eine Streichnote festlegen, sodass die schlechteste Teilnote unberücksichtigt bleibt. Fortschrittsbalken zeigen, wie viele Teilnoten schon erfasst sind, der Notenspiegel die Verteilung, und der Halbjahresvergleich stellt die Zeiträume mit Entwicklungspfeil gegenüber."],
+  ["note","Notizen und Bemerkungen","Zu jeder Person kannst du Notizen führen und je Halbjahr die Zeugnisbemerkung schreiben. Textbausteine mit Platzhalter für den Vornamen legst du selbst an und fügst sie mit einem Tipp ein. Bitte keine Angaben zu Krankheiten oder Diagnosen erfassen – dafür ist eine App auf einem privaten Gerät nicht der richtige Ort."],
+  ["eye","Ansicht für die Halle","Der Hallenmodus vergrößert Zeilen, Felder und Tasten für die Bedienung während des Unterrichts, die breite Tabellenansicht nutzt auf Tablet und Rechner die volle Bildschirmbreite, und die Namensspalte bleibt beim seitlichen Scrollen stehen. Noten erscheinen als Chip mit kleinem Balken, sodass sie nicht allein über die Farbe unterschieden werden; wahlweise stellt die App auf eine orange-blaue Skala für Rot-Grün-Sehschwäche um. Eingabefelder sind mindestens 44 Pixel hoch, Werte außerhalb von 1 bis 6 bekommen einen roten Rahmen und fließen nicht in die Berechnung ein. Am Rechner springt Enter oder die Pfeiltaste in die nächste Zeile derselben Spalte, Umschalt+Enter nach oben."],
+  ["toggle","Funktionen ein- und ausschalten","In den Einstellungen schaltest du jeden Bereich einzeln zu oder ab – Messwerte, Stoppuhr, Anwesenheit, Nachholliste, Streichnote, Halbjahre, Vergleich, Notenspiegel, Oberstufenpunkte, Notizen, Bausteine, Gruppenlosung und alle Ansichtsoptionen. Wer nur Noten eintragen will, behält so eine sehr schlanke Oberfläche."],
+  ["pencil","Namen ändern und entfernen","Neben jedem Namen in der Klassenliste sitzt ein Stift. Dahinter änderst du Nachname, Vorname und Geschlecht – die Änderung gilt sofort in allen Halbjahren – oder entfernst die Person aus der Liste. Gelöschtes holt „Rückgängig“ sieben Sekunden lang zurück."],
+  ["clock","Notenlog","Auf Wunsch merkt sich die App, wann eine Note gesetzt oder geändert wurde, samt vorherigem Wert. Im Profil steht die Liste der letzten Änderungen – nützlich, wenn im Elterngespräch gefragt wird, seit wann eine Note feststand. Da dabei zusätzliche personenbezogene Daten entstehen, ist die Funktion ausgeschaltet, bis du sie einschaltest."],
+  ["upload","Sicherungen teilweise übernehmen","Beim Laden einer Sicherung entscheidest du, ob alles ersetzt wird oder ob nur einzelne Klassen zu deinem Bestand hinzukommen. Fehlende Bewertungstabellen werden dabei ergänzt, vorhandene bleiben unangetastet – so lassen sich Tablet und Rechner abgleichen, ohne versehentlich alles zu überschreiben."],
+  ["lock","Schutz der Daten","Eine PIN sperrt die App beim Start, „Namen abkürzen“ zeigt statt des vollen Namens nur Initialen, und Sicherungen lassen sich mit einem Passwort verschlüsseln. Die Sicherungserinnerung meldet sich, wenn die letzte Sicherung mehr als eine Woche her ist. Für ein Auskunftsersuchen erzeugt die App eine Textdatei mit allen zu einer Person gespeicherten Daten, und zum Schuljahresende lässt sich alles auf einen Schlag löschen."],
+];
+function About({up}){
+  return (
+    <div className="wrap" style={{paddingTop:14}}>
+      <button className="btn-quiet" style={{border:"none",paddingLeft:0}} onClick={()=>up({screen:"home"})}><Ic n="back" size={14}/> Zurück</button>
+      <div className="card" style={{background:"linear-gradient(135deg,var(--hero1),var(--hero2))",color:"#fff"}}>
+        <Wordmark size="lg" light sub="Notenverwaltung für den Sportunterricht"/>
+        <p style={{fontSize:14,lineHeight:1.6,color:"#fff",marginBottom:0}}>
+          Klassen führen, Teilnoten gewichten, Weiten und Zeiten automatisch benoten, Anwesenheit festhalten
+          und am Ende des Halbjahres eine belastbare Zeugnisnote haben – ohne Konto, ohne Cloud, ohne Werbung.
+        </p>
+      </div>
+
+      <div className="card">
+        <h2 className="sec">Funktionen im Einzelnen</h2>
+        {FEATURE_DOCS.map(([icon,title,text],i)=>(
+          <div key={i} style={{borderTop:i?"1px solid var(--line)":"none",padding:"11px 0"}}>
+            <strong style={{fontSize:15,display:"flex",alignItems:"center",gap:7}}><Ic n={icon} size={16} color="var(--accent)"/>{title}</strong>
+            <p style={{margin:"5px 0 0",fontSize:14,lineHeight:1.6,color:"var(--sub)"}}>{text}</p>
+          </div>))}
+      </div>
+
+      <div className="card">
+        <h2 className="sec">So arbeitest du am schnellsten</h2>
+        <ol style={{margin:0,paddingLeft:20,fontSize:14,lineHeight:1.7,color:"var(--sub)"}}>
+          <li>Klasse anlegen, Jahrgang setzen, Namensliste importieren.</li>
+          <li>Sportarten aus den Vorlagen wählen und die Gewichte anpassen.</li>
+          <li>Bei Messdisziplinen die Bewertungstabelle zuordnen und deren Werte an die Vorgaben deines Landes anpassen.</li>
+          <li>In der Halle nur noch Werte und Noten eintippen – gerechnet wird sofort. Fehlendes mit dem Fähnchen markieren.</li>
+          <li>Am Rechner mit Enter und den Pfeiltasten durch die Spalte laufen, ohne die Maus anzufassen.</li>
+          <li>Am Halbjahresende Endnoten festsetzen, drucken und die Sicherung verschlüsselt ablegen.</li>
+        </ol>
+      </div>
+
+      <div className="card">
+        <h2 className="sec"><Ic n="shield" size={14}/> Datenschutz</h2>
+        <p style={{margin:0,fontSize:14,lineHeight:1.6}}>
+          Alle Eingaben bleiben ausschließlich auf diesem Gerät. Es gibt kein Benutzerkonto, keine Werbung, keine Analyse und keine Übertragung an Server.
+          Wer auf einem privaten Gerät personenbezogene Daten von Schülerinnen und Schülern verarbeitet, braucht dafür in der Regel die schriftliche Genehmigung der Schulleitung;
+          verantwortlich im Sinne der DSGVO bleibt die Schule. Gesundheitsdaten gehören nicht in diese App. Nach Abgabe der Zeugnisnoten lassen sich alle Daten in den Einstellungen vollständig löschen.
+        </p>
+      </div>
+
+      <div className="card">
+        <h2 className="sec">Impressum</h2>
+        <div className="row" style={{justifyContent:"space-between",padding:"5px 0"}}><span className="lbl">App</span><strong>{APP_NAME} – {APP_SUB}</strong></div>
+        <div className="row" style={{justifyContent:"space-between",padding:"5px 0",borderTop:"1px solid var(--line)"}}><span className="lbl">Entwickelt von</span><strong>{DEVELOPER}</strong></div>
+        <div className="row" style={{justifyContent:"space-between",padding:"5px 0",borderTop:"1px solid var(--line)"}}><span className="lbl">Version</span><span>{APP_VER}</span></div>
+        <div className="row" style={{justifyContent:"space-between",padding:"5px 0",borderTop:"1px solid var(--line)"}}><span className="lbl">Kontakt</span><span style={{color:"var(--sub)"}}>kontakt@example.de</span></div>
+        <div style={{marginTop:10,fontSize:12,color:"var(--faint)"}}>© {new Date().getFullYear()} {DEVELOPER}. Die mitgelieferten Bewertungstabellen sind Beispielwerte und ersetzen keine amtlichen Vorgaben.</div>
+      </div>
+    </div>);
+}
+
+/* ---------- Druck ---------- */
+function renderPrint(state,cls,term){
+  const el=document.getElementById("print"); if(!el)return;
+  const list=sortStudents(cls.students,state.sort,term);
+  const head=["Name",...term.sports.map(s=>s.name),"Gesamt","unents.","entsch.","vergessen"];
+  const rows=list.map(st=>{
+    const d=tof(st,term.id);
+    const tds=[dispName(st,state.anon),...term.sports.map(s=>fmtNote(sportGrade(st,s),1)),
+      "<strong>"+fmtNote(totalGrade(st,term),1)+(parseNote(d.final)!=null?"*":"")+"</strong>",
+      Number(d.absU||0)+attCount(term,st.id,"u"),Number(d.absE||0)+attCount(term,st.id,"e"),
+      Number(d.forgot||0)+attCount(term,st.id,"v")];
+    return "<tr>"+tds.map(x=>"<td>"+x+"</td>").join("")+"</tr>";
+  }).join("");
+  el.innerHTML=`<div class="print-sheet">
+    <h1>${APP_NAME} – Notenliste ${cls.name} · ${term.label}</h1>
+    <div>${[state.teacher,state.school,"Jahrgang "+cls.jg].filter(Boolean).join(" · ")} · Stand ${new Date().toLocaleDateString("de-DE")}</div>
+    <table><thead><tr>${head.map(h=>"<th>"+h+"</th>").join("")}</tr></thead><tbody>${rows}</tbody></table>
+    <p style="font-size:10px;color:#666">* festgesetzte Note. Vertraulich – enthält personenbezogene Daten. Nach Gebrauch sicher aufbewahren oder vernichten.</p>
+  </div>`;
+}
+
+ReactDOM.createRoot(document.getElementById("app")).render(<App/>);
+</script>
+</body>
+</html>
