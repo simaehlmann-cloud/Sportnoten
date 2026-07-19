@@ -1,0 +1,57 @@
+name: Web-App veröffentlichen
+
+# Stellt die App unter https://<dein-name>.github.io/<repository>/ bereit.
+# Einmalig nötig: Settings → Pages → Source auf "GitHub Actions" stellen.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Quellcode holen
+        uses: actions/checkout@v4
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Pakete installieren
+        run: npm install
+
+      - name: Fehlende Icons aus der Vorlage erzeugen
+        run: node scripts/icons.mjs --if-missing
+
+      - name: Web-App bauen (www/)
+        run: npm run build
+
+      - name: Pages vorbereiten
+        uses: actions/configure-pages@v5
+
+      - name: Ergebnis hochladen
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: www
+
+  veroeffentlichen:
+    needs: bauen
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Veröffentlichen
+        id: deploy
+        uses: actions/deploy-pages@v4
